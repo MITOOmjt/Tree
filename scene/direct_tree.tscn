@@ -1,9 +1,6 @@
-[gd_scene load_steps=3 format=3 uid="uid://c3kax45vggcvy"]
+[gd_scene load_steps=2 format=3 uid="uid://c3kax45vggcvy"]
 
 [ext_resource type="Script" path="res://scripts/direct_tree.gd" id="1_script"]
-
-[sub_resource type="CircleShape2D" id="CircleShape2D_dw4bx"]
-radius = 50.0
 
 [node name="DirectTree" type="Node2D"]
 script = ExtResource("1_script")
@@ -21,9 +18,8 @@ polygon = PackedVector2Array(-10, 0, 10, 0, 10, 50, -10, 50)
 [node name="ClickArea" type="Area2D" parent="."]
 monitorable = false
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="ClickArea"]
-position = Vector2(0, -50)
-shape = SubResource("CircleShape2D_dw4bx")
+[node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="ClickArea"]
+polygon = PackedVector2Array(-60, 0, 60, 0, 0, -100, -60, 0)
 
 [node name="CoinTimer" type="Timer" parent="."]
 wait_time = 5.0

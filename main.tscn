@@ -1,5 +1,5 @@
-[gd_scene load_steps=2 format=3 uid="uid://c5j8tmo2cdwud"]
+[gd_scene load_steps=2 format=3 uid="uid://cvwsdrobh8mwe"]
 
 [ext_resource type="PackedScene" uid="uid://c5j8tmo2cdwud" path="res://scene/main.tscn" id="1_redirect"]
 
-[node name="Main" instance=ExtResource("1_redirect")] 
+[node name="Main" instance=ExtResource("1_redirect")]
