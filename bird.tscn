@@ -1,0 +1,5 @@
+[gd_scene load_steps=2 format=3 uid="uid://b4kj2x8p7y6m5"]
+
+[ext_resource type="PackedScene" uid="uid://b4kj2x8p7y6m5" path="res://scene/bird.tscn" id="1_redirect"]
+
+[node name="Bird" instance=ExtResource("1_redirect")] 

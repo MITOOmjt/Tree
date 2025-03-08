@@ -27,4 +27,4 @@ shape = SubResource("CircleShape2D_dw4bx")
 
 [node name="CoinTimer" type="Timer" parent="."]
 wait_time = 5.0
-autostart = true 
+autostart = true

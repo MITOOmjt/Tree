@@ -7,4 +7,4 @@ script = ExtResource("1_script")
 
 [node name="BirdShape" type="Polygon2D" parent="."]
 color = Color(0.87451, 0.443137, 0.14902, 1)
-polygon = PackedVector2Array(-15, 0, 15, 0, 0, -20) 
+polygon = PackedVector2Array(-15, 0, 15, 0, 0, -20)
