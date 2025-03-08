@@ -19,22 +19,27 @@ func _ready():
 
 # 重写 _input 方法直接处理点击
 func _input(event):
+	# 只有当点击事件没有被其他节点处理时才执行
 	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
-		var global_pos = event.global_position
-		var local_pos = to_local(global_pos)
-		
-		# 检查是否点击在树区域内
-		if _is_point_in_tree(local_pos):
-			print("全局检测到直接点击在树上")
-			_handle_bird_creation(local_pos)
-			get_viewport().set_input_as_handled()
+		# 检查事件是否已被处理（例如被鸟处理）
+		if not event.is_echo() and event.get_meta("handled", false) == false:
+			var global_pos = event.global_position
+			var local_pos = to_local(global_pos)
+			
+			# 检查是否点击在树区域内
+			if _is_point_in_tree(local_pos):
+				print("全局检测到直接点击在树上")
+				_handle_bird_creation(local_pos)
+				get_viewport().set_input_as_handled()
 
 # 区域点击检测
 func _on_click_area_input_event(_viewport, event, _shape_idx):
 	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
-		print("区域检测到点击")
-		var local_pos = get_local_mouse_position()
-		_handle_bird_creation(local_pos)
+		# 检查事件是否已被处理（例如被鸟处理）
+		if not event.is_echo() and not get_viewport().is_input_handled():
+			print("区域检测到点击")
+			var local_pos = get_local_mouse_position()
+			_handle_bird_creation(local_pos)
 
 # 检查点是否在树区域内
 func _is_point_in_tree(point: Vector2) -> bool:
