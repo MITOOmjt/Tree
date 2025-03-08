@@ -1,0 +1,7 @@
+[gd_scene format=3 uid="uid://b4kj2x8p7y6m5"]
+
+[node name="Bird" type="Node2D"]
+
+[node name="BirdShape" type="Polygon2D" parent="."]
+color = Color(0.87451, 0.443137, 0.14902, 1)
+polygon = PackedVector2Array(-15, 0, 15, 0, 0, -20) 

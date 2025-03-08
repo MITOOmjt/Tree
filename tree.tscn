@@ -1,0 +1,23 @@
+[gd_scene load_steps=3 format=3 uid="uid://cgy3krv2bkr0v"]
+
+[ext_resource type="Script" path="res://tree.gd" id="1_script"]
+
+[sub_resource type="ConvexPolygonShape2D" id="ConvexPolygonShape2D_1"]
+points = PackedVector2Array(-50, 0, 50, 0, 0, -100)
+
+[node name="Tree" type="Node2D"]
+scale = Vector2(10.96, 10.96)
+script = ExtResource("1_script")
+
+[node name="TreeShape" type="Area2D" parent="."]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="TreeShape"]
+shape = SubResource("ConvexPolygonShape2D_1")
+
+[node name="VisualShape" type="Polygon2D" parent="TreeShape"]
+color = Color(0.262745, 0.521569, 0.196078, 1)
+polygon = PackedVector2Array(-50, 0, 50, 0, 0, -100)
+
+[node name="Trunk" type="Polygon2D" parent="."]
+color = Color(0.545098, 0.270588, 0.0745098, 1)
+polygon = PackedVector2Array(-10, 0, 10, 0, 10, 50, -10, 50)
