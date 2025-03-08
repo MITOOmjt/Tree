@@ -1,0 +1,35 @@
+[gd_scene load_steps=2 format=3 uid="uid://c7m1p8mh0y4i3"]
+
+[ext_resource type="Script" path="res://simple_tree.gd" id="1_script"]
+
+[node name="SimpleTree" type="Node2D"]
+script = ExtResource("1_script")
+
+[node name="TreeButton" type="Button" parent="."]
+modulate = Color(1, 1, 1, 0)
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -70.0
+offset_top = -150.0
+offset_right = 70.0
+offset_bottom = 50.0
+grow_horizontal = 2
+grow_vertical = 2
+flat = true
+
+[node name="TreeVisual" type="Node2D" parent="."]
+
+[node name="TreeShape" type="Polygon2D" parent="TreeVisual"]
+color = Color(0.262745, 0.521569, 0.196078, 1)
+polygon = PackedVector2Array(-50, 0, 50, 0, 0, -100)
+
+[node name="Trunk" type="Polygon2D" parent="TreeVisual"]
+color = Color(0.545098, 0.270588, 0.0745098, 1)
+polygon = PackedVector2Array(-10, 0, 10, 0, 10, 50, -10, 50)
+
+[node name="CoinTimer" type="Timer" parent="."]
+wait_time = 5.0
+autostart = true 
