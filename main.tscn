@@ -6,7 +6,6 @@
 
 [node name="Tree1" parent="." instance=ExtResource("1_tree")]
 position = Vector2(200, 300)
-scale = Vector2(1, 1)
 
 [node name="Tree2" parent="." instance=ExtResource("1_tree")]
 position = Vector2(500, 200)
