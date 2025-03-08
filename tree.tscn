@@ -6,7 +6,7 @@
 points = PackedVector2Array(-50, 0, 50, 0, 0, -100)
 
 [node name="Tree" type="Node2D"]
-scale = Vector2(10.96, 10.96)
+scale = Vector2(1, 1)
 script = ExtResource("1_script")
 
 [node name="TreeShape" type="Area2D" parent="."]
