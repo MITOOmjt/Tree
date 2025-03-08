@@ -1,6 +1,6 @@
 [gd_scene load_steps=3 format=3 uid="uid://c5j8tmo2cdwud"]
 
-[ext_resource type="PackedScene" uid="uid://c7m1p8mh0y4i3" path="res://simple_tree.tscn" id="1_tree"]
+[ext_resource type="PackedScene" uid="uid://c3kax45vggcvy" path="res://direct_tree.tscn" id="1_tree"]
 [ext_resource type="PackedScene" uid="uid://chjgujd8q2d5f" path="res://ui.tscn" id="2_ui"]
 
 [node name="Main" type="Node2D"]
@@ -9,21 +9,21 @@
 
 [node name="Trees" type="Node2D" parent="."]
 
-[node name="SimpleTree1" parent="Trees" instance=ExtResource("1_tree")]
+[node name="DirectTree1" parent="Trees" instance=ExtResource("1_tree")]
 position = Vector2(200, 300)
 
-[node name="SimpleTree2" parent="Trees" instance=ExtResource("1_tree")]
+[node name="DirectTree2" parent="Trees" instance=ExtResource("1_tree")]
 position = Vector2(500, 200)
 scale = Vector2(0.8, 0.8)
 
-[node name="SimpleTree3" parent="Trees" instance=ExtResource("1_tree")]
+[node name="DirectTree3" parent="Trees" instance=ExtResource("1_tree")]
 position = Vector2(800, 300)
 scale = Vector2(1.2, 1.2)
 
-[node name="SimpleTree4" parent="Trees" instance=ExtResource("1_tree")]
+[node name="DirectTree4" parent="Trees" instance=ExtResource("1_tree")]
 position = Vector2(350, 500)
 scale = Vector2(0.9, 0.9)
 
-[node name="SimpleTree5" parent="Trees" instance=ExtResource("1_tree")]
+[node name="DirectTree5" parent="Trees" instance=ExtResource("1_tree")]
 position = Vector2(650, 450)
 scale = Vector2(1.1, 1.1)

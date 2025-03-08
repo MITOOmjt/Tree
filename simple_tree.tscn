@@ -5,21 +5,6 @@
 [node name="SimpleTree" type="Node2D"]
 script = ExtResource("1_script")
 
-[node name="TreeButton" type="Button" parent="."]
-modulate = Color(1, 1, 1, 0)
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = -70.0
-offset_top = -150.0
-offset_right = 70.0
-offset_bottom = 50.0
-grow_horizontal = 2
-grow_vertical = 2
-flat = true
-
 [node name="TreeVisual" type="Node2D" parent="."]
 
 [node name="TreeShape" type="Polygon2D" parent="TreeVisual"]
@@ -30,6 +15,30 @@ polygon = PackedVector2Array(-50, 0, 50, 0, 0, -100)
 color = Color(0.545098, 0.270588, 0.0745098, 1)
 polygon = PackedVector2Array(-10, 0, 10, 0, 10, 50, -10, 50)
 
+[node name="TreeButton" type="Button" parent="."]
+modulate = Color(1, 1, 1, 0.1)
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -60.0
+offset_top = -120.0
+offset_right = 60.0
+offset_bottom = 60.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_default_cursor_shape = 2
+flat = true
+
 [node name="CoinTimer" type="Timer" parent="."]
 wait_time = 5.0
-autostart = true 
+autostart = true
+
+[node name="Label" type="Label" parent="."]
+offset_left = -37.0
+offset_top = -76.0
+offset_right = 37.0
+offset_bottom = -50.0
+text = "点击我"
+horizontal_alignment = 1 

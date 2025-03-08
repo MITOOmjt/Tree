@@ -9,7 +9,6 @@ points = PackedVector2Array(-60, 10, 60, 10, 0, -120)
 script = ExtResource("1_script")
 
 [node name="TreeShape" type="Area2D" parent="."]
-input_pickable = true
 priority = 1
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="TreeShape"]

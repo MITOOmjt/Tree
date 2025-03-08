@@ -4,54 +4,56 @@ var bird_scene = preload("res://bird.tscn")
 var bird_cost = 10  # 生成鸟的成本
 
 @onready var coin_timer = $CoinTimer
-@onready var tree_button = $TreeButton
+@onready var click_area = $ClickArea
 
-# 设置为可点击
 func _ready():
-	print("简化树初始化，当前金币: ", Global.get_coins())
+	print("直接实现树初始化，当前金币: ", Global.get_coins())
 	
-	# 确保按钮可点击
-	tree_button.mouse_filter = Control.MOUSE_FILTER_STOP
-	
-	# 多种方式连接点击事件
-	tree_button.pressed.connect(_on_tree_button_pressed)
-	tree_button.gui_input.connect(_on_tree_gui_input)
-	print("树按钮点击事件已连接")
+	# 连接区域输入事件
+	click_area.input_event.connect(_on_click_area_input_event)
+	print("区域点击事件已连接")
 	
 	# 连接计时器的timeout信号
 	coin_timer.timeout.connect(_on_coin_timer_timeout)
 	print("金币计时器已连接")
 
-# 直接处理输入事件，作为备选方案
+# 重写 _input 方法直接处理点击
 func _input(event):
 	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
-		print("全局点击事件")
-		var global_pos = get_global_mouse_position()
+		var global_pos = event.global_position
 		var local_pos = to_local(global_pos)
 		
-		# 简单的点击检测，检查是否在树的范围内
-		var in_tree_shape = (local_pos.y < 0 and local_pos.y > -120 and 
-							abs(local_pos.x) < 60)
-		var in_trunk = (local_pos.y >= 0 and local_pos.y <= 50 and 
-						abs(local_pos.x) < 10)
-		
-		if in_tree_shape or in_trunk:
-			print("全局检测到点击在树上")
+		# 检查是否点击在树区域内
+		if _is_point_in_tree(local_pos):
+			print("全局检测到直接点击在树上")
 			_handle_bird_creation(local_pos)
 			get_viewport().set_input_as_handled()
 
-# GUI输入处理
-func _on_tree_gui_input(event):
+# 区域点击检测
+func _on_click_area_input_event(_viewport, event, _shape_idx):
 	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
-		print("GUI输入：树被点击了！")
+		print("区域检测到点击")
 		var local_pos = get_local_mouse_position()
 		_handle_bird_creation(local_pos)
 
-# 按钮点击事件
-func _on_tree_button_pressed():
-	print("按钮点击：树被点击了！")
-	var local_pos = get_local_mouse_position()
-	_handle_bird_creation(local_pos)
+# 检查点是否在树区域内
+func _is_point_in_tree(point: Vector2) -> bool:
+	# 简单的点包含检测 - 三角形区域 + 矩形树干
+	var in_triangle = _is_point_in_triangle(point, 
+		Vector2(-50, 0), Vector2(50, 0), Vector2(0, -100))
+	
+	var in_trunk = (point.y >= 0 and point.y <= 50 and 
+					abs(point.x) <= 10)
+	
+	return in_triangle or in_trunk
+
+# 点在三角形中的检测
+func _is_point_in_triangle(p: Vector2, a: Vector2, b: Vector2, c: Vector2) -> bool:
+	var area = 0.5 * (-b.y * c.x + a.y * (-b.x + c.x) + a.x * (b.y - c.y) + b.x * c.y)
+	var s = 1.0 / (2.0 * area) * (a.y * c.x - a.x * c.y + (c.y - a.y) * p.x + (a.x - c.x) * p.y)
+	var t = 1.0 / (2.0 * area) * (a.x * b.y - a.y * b.x + (a.y - b.y) * p.x + (b.x - a.x) * p.y)
+	
+	return s >= 0 and t >= 0 and (s + t) <= 1
 
 # 处理鸟的创建逻辑
 func _handle_bird_creation(position):
