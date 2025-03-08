@@ -1,6 +1,6 @@
 extends Node2D
 
-var bird_scene = preload("res://bird.tscn")
+var bird_scene = preload("res://scene/bird.tscn")
 var bird_cost = 10  # 生成鸟的成本
 
 @onready var coin_timer = $CoinTimer
