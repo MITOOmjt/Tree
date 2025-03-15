@@ -19,6 +19,7 @@ config/icon="res://icon.svg"
 
 Global="*res://scripts/global.gd"
 MessageBus="*res://scripts/message_bus.gd"
+GameManager="*res://scripts/game_manager.gd"
 
 [rendering]
 
