@@ -19,6 +19,33 @@
    - 创建新文件时提醒用户遵循文件夹规范
    - 提示信息例子：「根据项目规范，我会将这个新场景文件放在scene/目录下，脚本放在scripts/目录下」
 
+4. **项目结构警告**：
+   - 警惕项目中存在多个相同名称的文件位于不同目录（如`/scripts`和`/treegame/scripts`）
+   - 确认对哪个文件的修改会实际影响游戏运行
+   - 提示信息例子：「注意：发现多个{file_name}文件，请确认您要修改的是{correct_path}而非{wrong_path}」
+
+5. **项目结构清理**：
+   - 发现重复文件时，主动建议用户进行清理
+   - 删除废弃或未被引用的副本文件
+   - 确保所有引用指向唯一且正确的文件路径
+   - 提示信息例子：「项目中存在多个{file_name}文件，建议保留{primary_file}并删除{duplicate_files}，然后更新所有引用」
+
+## 文件唯一性和标准化
+
+为防止项目中出现重复文件，AI助手应遵循以下原则：
+
+1. **文件位置唯一性**：
+   - 每个脚本和场景文件在项目中应当只有一个版本
+   - 脚本文件仅存放在`scripts/`目录下
+   - 场景文件仅存放在`scene/`目录下
+   - 确保不会在`treegame/scripts/`和`scripts/`等不同目录下创建同名文件
+
+2. **文件迁移建议**：
+   - 发现文件位于错误目录时，建议用户将其移动到正确位置
+   - 移动文件后，确保更新所有引用该文件的地方
+   - 移动文件前，确保备份或提交当前更改
+   - 提示信息例子：「建议将{wrong_path}移动到{correct_path}，并更新所有引用该文件的地方」
+
 ## 代码审查
 
 AI助手在帮助用户编写或修改代码时，应主动检查：
@@ -26,6 +53,8 @@ AI助手在帮助用户编写或修改代码时，应主动检查：
 1. 变量和函数命名是否符合规范
 2. 缩进是否使用4个空格
 3. 代码是否注释清晰
+4. 确保所有变量和函数在使用前已正确声明
+5. 检查资源preload路径是否正确（应使用`res://scene/`或`res://scripts/`开头）
 
 ## 响应风格
 
@@ -46,10 +75,25 @@ AI助手在帮助用户编写或修改代码时，应主动检查：
    - 信号连接语法：使用 `node.signal_name.connect(callable)` 而非旧版的 `node.connect("signal_name", callable)`
    - 信号断开连接：使用 `node.disconnect("signal_name", Callable(self, "method_name"))` 
    - 示例：
-	 ```gdscript
-	 # 正确的Godot 4.3连接方式
-	 button.pressed.connect(_on_button_pressed)
-	 
-	 # 错误的旧版连接方式
-	 button.connect("pressed", _on_button_pressed)
-	 ```
+     ```gdscript
+     # 正确的Godot 4.3连接方式
+     button.pressed.connect(_on_button_pressed)
+     
+     # 错误的旧版连接方式
+     button.connect("pressed", _on_button_pressed)
+     ```
+7. **脚本版本检查**：
+   - 修改脚本前，确认Godot项目使用的是哪个版本的脚本文件
+   - 在修复语法错误或解析错误时，优先考虑完全重写文件而不是局部修改
+   - 提示信息例子：「我注意到脚本解析错误可能是由不完整的编辑导致的，建议重写整个脚本文件」
+
+8. **Git仓库结构注意事项**：
+   - 确认修改的文件是否在Git仓库内，某些文件可能位于仓库外
+   - 如果修改了仓库外的文件，提醒用户这些更改不会被Git跟踪
+   - 提示信息例子：「注意：您修改的文件{file_path}不在Git仓库内，这些更改不会被Git跟踪」
+
+9. **资源路径标准化**：
+   - 所有场景文件应位于`res://scene/`目录下
+   - 所有脚本文件应位于`res://scripts/`目录下
+   - 所有预加载资源路径应以`res://scene/`或`res://scripts/`开头
+   - 提示信息例子：「资源路径应使用标准格式，如`res://scene/flower.tscn`而非`res://flower.tscn`」
