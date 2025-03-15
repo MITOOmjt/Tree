@@ -1,0 +1,145 @@
+[gd_scene format=3 uid="uid://dap4cnmaw2ogl"]
+
+[node name="GeneratorUI" type="CanvasLayer"]
+
+[node name="Control" type="Control" parent="."]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="GeneratorPanel" type="Panel" parent="Control"]
+layout_mode = 0
+offset_left = 20.0
+offset_top = 250.0
+offset_right = 320.0
+offset_bottom = 500.0
+
+[node name="TitleLabel" type="Label" parent="Control/GeneratorPanel"]
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_bottom = 30.0
+grow_horizontal = 2
+theme_override_font_sizes/font_size = 18
+text = "生成物选择"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="CurrentSelectionLabel" type="Label" parent="Control/GeneratorPanel"]
+layout_mode = 1
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -30.0
+grow_horizontal = 2
+grow_vertical = 0
+theme_override_font_sizes/font_size = 16
+text = "当前选择：花"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="ScrollContainer" type="ScrollContainer" parent="Control/GeneratorPanel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = 30.0
+offset_bottom = -30.0
+grow_horizontal = 2
+grow_vertical = 2
+horizontal_scroll_mode = 0
+
+[node name="GeneratorList" type="VBoxContainer" parent="Control/GeneratorPanel/ScrollContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_constants/separation = 10
+
+[node name="TreeItem" type="PanelContainer" parent="Control/GeneratorPanel/ScrollContainer/GeneratorList"]
+layout_mode = 2
+
+[node name="HBoxContainer" type="HBoxContainer" parent="Control/GeneratorPanel/ScrollContainer/GeneratorList/TreeItem"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="MarginContainer" type="MarginContainer" parent="Control/GeneratorPanel/ScrollContainer/GeneratorList/TreeItem/HBoxContainer"]
+layout_mode = 2
+theme_override_constants/margin_left = 5
+theme_override_constants/margin_top = 5
+theme_override_constants/margin_right = 5
+theme_override_constants/margin_bottom = 5
+
+[node name="Icon" type="ColorRect" parent="Control/GeneratorPanel/ScrollContainer/GeneratorList/TreeItem/HBoxContainer/MarginContainer"]
+custom_minimum_size = Vector2(40, 40)
+layout_mode = 2
+size_flags_vertical = 4
+color = Color(0.145098, 0.639216, 0.121569, 1)
+
+[node name="VBoxContainer" type="VBoxContainer" parent="Control/GeneratorPanel/ScrollContainer/GeneratorList/TreeItem/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="NameLabel" type="Label" parent="Control/GeneratorPanel/ScrollContainer/GeneratorList/TreeItem/HBoxContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 16
+text = "树木"
+
+[node name="CostLabel" type="Label" parent="Control/GeneratorPanel/ScrollContainer/GeneratorList/TreeItem/HBoxContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.807843, 0.807843, 0.807843, 1)
+theme_override_font_sizes/font_size = 12
+text = "花费: 3金币"
+
+[node name="TreeButton" type="Button" parent="Control/GeneratorPanel/ScrollContainer/GeneratorList/TreeItem/HBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 4
+text = "选择"
+
+[node name="FlowerItem" type="PanelContainer" parent="Control/GeneratorPanel/ScrollContainer/GeneratorList"]
+layout_mode = 2
+
+[node name="HBoxContainer" type="HBoxContainer" parent="Control/GeneratorPanel/ScrollContainer/GeneratorList/FlowerItem"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="MarginContainer" type="MarginContainer" parent="Control/GeneratorPanel/ScrollContainer/GeneratorList/FlowerItem/HBoxContainer"]
+layout_mode = 2
+theme_override_constants/margin_left = 5
+theme_override_constants/margin_top = 5
+theme_override_constants/margin_right = 5
+theme_override_constants/margin_bottom = 5
+
+[node name="Icon" type="ColorRect" parent="Control/GeneratorPanel/ScrollContainer/GeneratorList/FlowerItem/HBoxContainer/MarginContainer"]
+custom_minimum_size = Vector2(40, 40)
+layout_mode = 2
+size_flags_vertical = 4
+color = Color(0.933333, 0.262745, 0.603922, 1)
+
+[node name="VBoxContainer" type="VBoxContainer" parent="Control/GeneratorPanel/ScrollContainer/GeneratorList/FlowerItem/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="NameLabel" type="Label" parent="Control/GeneratorPanel/ScrollContainer/GeneratorList/FlowerItem/HBoxContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 16
+text = "花朵"
+
+[node name="CostLabel" type="Label" parent="Control/GeneratorPanel/ScrollContainer/GeneratorList/FlowerItem/HBoxContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.807843, 0.807843, 0.807843, 1)
+theme_override_font_sizes/font_size = 12
+text = "花费: 1金币"
+
+[node name="FlowerButton" type="Button" parent="Control/GeneratorPanel/ScrollContainer/GeneratorList/FlowerItem/HBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 4
+text = "选择"
+
+[node name="EmptySpace" type="Control" parent="Control/GeneratorPanel/ScrollContainer/GeneratorList"]
+layout_mode = 2
+size_flags_vertical = 3

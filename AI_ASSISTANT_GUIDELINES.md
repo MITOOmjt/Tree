@@ -41,3 +41,15 @@ AI助手在帮助用户编写或修改代码时，应主动检查：
 2. 树木相关的逻辑应遵循现有的direct_tree.gd实现方式
 3. 金币系统的修改应通过Global单例进行
 4. 鸟的生成应保持在树的子节点下 
+5. 每次产生改动后，都需要在对话里提醒我是否要git上传
+6. **注意Godot 4.3语法特性**：
+   - 信号连接语法：使用 `node.signal_name.connect(callable)` 而非旧版的 `node.connect("signal_name", callable)`
+   - 信号断开连接：使用 `node.disconnect("signal_name", Callable(self, "method_name"))` 
+   - 示例：
+	 ```gdscript
+	 # 正确的Godot 4.3连接方式
+	 button.pressed.connect(_on_button_pressed)
+	 
+	 # 错误的旧版连接方式
+	 button.connect("pressed", _on_button_pressed)
+	 ```
