@@ -1,0 +1,91 @@
+[gd_scene load_steps=4 format=3 uid="uid://c5j8tmo2cdwud"]
+
+[ext_resource type="PackedScene" uid="uid://c3kax45vggcvy" path="res://scene/direct_tree.tscn" id="1_tree"]
+[ext_resource type="PackedScene" uid="uid://chjgujd8q2d5f" path="res://scene/ui.tscn" id="2_ui"]
+[ext_resource type="Script" path="res://scripts/background_manager.gd" id="3_jk8m1"]
+
+[node name="Main" type="Node2D"]
+script = ExtResource("3_jk8m1")
+
+[node name="UI" parent="." instance=ExtResource("2_ui")]
+_import_path = NodePath("")
+unique_name_in_owner = false
+process_mode = 0
+process_priority = 0
+process_physics_priority = 0
+process_thread_group = 0
+physics_interpolation_mode = 0
+auto_translate_mode = 0
+editor_description = ""
+script = null
+
+[node name="Trees" type="Node2D" parent="."]
+
+[node name="DirectTree1" parent="Trees" instance=ExtResource("1_tree")]
+_import_path = NodePath("")
+unique_name_in_owner = false
+process_mode = 0
+process_priority = 0
+process_physics_priority = 0
+process_thread_group = 0
+physics_interpolation_mode = 0
+auto_translate_mode = 0
+editor_description = ""
+position = Vector2(200, 300)
+script = null
+
+[node name="DirectTree2" parent="Trees" instance=ExtResource("1_tree")]
+_import_path = NodePath("")
+unique_name_in_owner = false
+process_mode = 0
+process_priority = 0
+process_physics_priority = 0
+process_thread_group = 0
+physics_interpolation_mode = 0
+auto_translate_mode = 0
+editor_description = ""
+position = Vector2(500, 200)
+scale = Vector2(0.8, 0.8)
+script = null
+
+[node name="DirectTree3" parent="Trees" instance=ExtResource("1_tree")]
+_import_path = NodePath("")
+unique_name_in_owner = false
+process_mode = 0
+process_priority = 0
+process_physics_priority = 0
+process_thread_group = 0
+physics_interpolation_mode = 0
+auto_translate_mode = 0
+editor_description = ""
+position = Vector2(800, 300)
+scale = Vector2(1.2, 1.2)
+script = null
+
+[node name="DirectTree4" parent="Trees" instance=ExtResource("1_tree")]
+_import_path = NodePath("")
+unique_name_in_owner = false
+process_mode = 0
+process_priority = 0
+process_physics_priority = 0
+process_thread_group = 0
+physics_interpolation_mode = 0
+auto_translate_mode = 0
+editor_description = ""
+position = Vector2(350, 500)
+scale = Vector2(0.9, 0.9)
+script = null
+
+[node name="DirectTree5" parent="Trees" instance=ExtResource("1_tree")]
+_import_path = NodePath("")
+unique_name_in_owner = false
+process_mode = 0
+process_priority = 0
+process_physics_priority = 0
+process_thread_group = 0
+physics_interpolation_mode = 0
+auto_translate_mode = 0
+editor_description = ""
+position = Vector2(650, 450)
+scale = Vector2(1.1, 1.1)
+script = null

@@ -1,5 +1,0 @@
-[gd_scene load_steps=2 format=3 uid="uid://c3kax45vggcvy"]
-
-[ext_resource type="PackedScene" uid="uid://c3kax45vggcvy" path="res://scene/direct_tree.tscn" id="1_redirect"]
-
-[node name="DirectTree" instance=ExtResource("1_redirect")] 
