@@ -1,0 +1,114 @@
+[gd_scene load_steps=2 format=3 uid="uid://cdrxtmyx0qhch"]
+
+[ext_resource type="Script" path="res://scripts/generator_popup_ui.gd" id="1_g4moj"]
+
+[node name="GeneratorPopupUI" type="CanvasLayer"]
+script = ExtResource("1_g4moj")
+
+[node name="PopupPanel" type="PopupPanel" parent="."]
+size = Vector2i(300, 250)
+visible = true
+exclusive = false
+borderless = false
+unfocusable = false
+always_on_top = true
+popup_window = false
+
+[node name="MarginContainer" type="MarginContainer" parent="PopupPanel"]
+offset_left = 4.0
+offset_top = 4.0
+offset_right = 296.0
+offset_bottom = 246.0
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 10
+theme_override_constants/margin_bottom = 10
+
+[node name="VBoxContainer" type="VBoxContainer" parent="PopupPanel/MarginContainer"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="TitleLabel" type="Label" parent="PopupPanel/MarginContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "生成物选择"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="HSeparator" type="HSeparator" parent="PopupPanel/MarginContainer/VBoxContainer"]
+layout_mode = 2
+
+[node name="GeneratorList" type="VBoxContainer" parent="PopupPanel/MarginContainer/VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 15
+
+[node name="TreeItem" type="HBoxContainer" parent="PopupPanel/MarginContainer/VBoxContainer/GeneratorList"]
+layout_mode = 2
+theme_override_constants/separation = 15
+
+[node name="ColorRect" type="ColorRect" parent="PopupPanel/MarginContainer/VBoxContainer/GeneratorList/TreeItem"]
+custom_minimum_size = Vector2(40, 40)
+layout_mode = 2
+size_flags_vertical = 4
+color = Color(0.145098, 0.639216, 0.121569, 1)
+
+[node name="VBoxContainer" type="VBoxContainer" parent="PopupPanel/MarginContainer/VBoxContainer/GeneratorList/TreeItem"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="NameLabel" type="Label" parent="PopupPanel/MarginContainer/VBoxContainer/GeneratorList/TreeItem/VBoxContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 16
+text = "树木"
+
+[node name="CostLabel" type="Label" parent="PopupPanel/MarginContainer/VBoxContainer/GeneratorList/TreeItem/VBoxContainer"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.807843, 0.807843, 0.807843, 1)
+theme_override_font_sizes/font_size = 12
+text = "花费: 3金币"
+
+[node name="TreeButton" type="Button" parent="PopupPanel/MarginContainer/VBoxContainer/GeneratorList/TreeItem"]
+layout_mode = 2
+size_flags_vertical = 4
+text = "选择"
+
+[node name="FlowerItem" type="HBoxContainer" parent="PopupPanel/MarginContainer/VBoxContainer/GeneratorList"]
+layout_mode = 2
+theme_override_constants/separation = 15
+
+[node name="ColorRect" type="ColorRect" parent="PopupPanel/MarginContainer/VBoxContainer/GeneratorList/FlowerItem"]
+custom_minimum_size = Vector2(40, 40)
+layout_mode = 2
+size_flags_vertical = 4
+color = Color(0.933333, 0.262745, 0.603922, 1)
+
+[node name="VBoxContainer" type="VBoxContainer" parent="PopupPanel/MarginContainer/VBoxContainer/GeneratorList/FlowerItem"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="NameLabel" type="Label" parent="PopupPanel/MarginContainer/VBoxContainer/GeneratorList/FlowerItem/VBoxContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 16
+text = "花朵"
+
+[node name="CostLabel" type="Label" parent="PopupPanel/MarginContainer/VBoxContainer/GeneratorList/FlowerItem/VBoxContainer"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.807843, 0.807843, 0.807843, 1)
+theme_override_font_sizes/font_size = 12
+text = "花费: 1金币"
+
+[node name="FlowerButton" type="Button" parent="PopupPanel/MarginContainer/VBoxContainer/GeneratorList/FlowerItem"]
+layout_mode = 2
+size_flags_vertical = 4
+text = "已选择"
+
+[node name="HSeparator2" type="HSeparator" parent="PopupPanel/MarginContainer/VBoxContainer"]
+layout_mode = 2
+
+[node name="CurrentSelectionLabel" type="Label" parent="PopupPanel/MarginContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 16
+text = "当前选择：花"
+horizontal_alignment = 1
+vertical_alignment = 1 

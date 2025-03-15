@@ -1,96 +1,84 @@
 extends Node2D
 
+# 调试路径
+const POPUP_UI_PATH = "res://scene/generator_popup_ui.tscn"
+
 var flower_scene = preload("res://scene/flower.tscn")
 var tree_scene = preload("res://scene/direct_tree.tscn")
+var popup_ui_scene = preload(POPUP_UI_PATH)
 
 # 定义生成器类型枚举
 enum GeneratorType {TREE = 0, FLOWER = 1}
 
 # 变量定义
 var current_generator = GeneratorType.FLOWER  # 默认选择花
+var coins = 0
+
+# 生成费用
+var generator_costs = {
+	GeneratorType.TREE: 3,  # 树木生成费用：3金币
+	GeneratorType.FLOWER: 1  # 花朵生成费用：1金币
+}
 
 # UI变量
-var current_selection_label
-var tree_button
-var flower_button
+var popup_ui
 
 func _ready():
+	print("背景管理器：加载的弹出UI路径 =", POPUP_UI_PATH)
+	
 	# 确保能接收输入
 	set_process_input(true)
 	
-	# 设置生成器UI
-	setup_generator_ui()
+	# 获取当前金币数量
+	coins = Global.get_coins()
+	
+	# 实例化并设置弹出式UI
+	setup_popup_ui()
 	
 	print("初始生成器类型: ", "树" if current_generator == GeneratorType.TREE else "花")
+	print("当前金币: ", coins)
 
-# 设置生成器UI
-func setup_generator_ui():
-	print("设置生成器UI...")
-	# 查找GeneratorUI节点
-	if has_node("GeneratorUI"):
-		var generator_ui = get_node("GeneratorUI")
-		
-		# 确保UI可见
-		generator_ui.visible = true
-		
-		# 查找按钮
-		tree_button = generator_ui.get_node("Control/GeneratorPanel/ScrollContainer/GeneratorList/TreeItem/HBoxContainer/TreeButton")
-		flower_button = generator_ui.get_node("Control/GeneratorPanel/ScrollContainer/GeneratorList/FlowerItem/HBoxContainer/FlowerButton")
-		
-		if tree_button and flower_button:
-			print("找到按钮，连接信号...")
-			# 连接按钮信号
-			tree_button.pressed.connect(_on_tree_button_pressed)
-			flower_button.pressed.connect(_on_flower_button_pressed)
-			
-			# 获取当前选择标签
-			current_selection_label = generator_ui.get_node("Control/GeneratorPanel/CurrentSelectionLabel")
-			update_selection_label()
-			update_button_styles()
-			print("生成器UI设置完成")
-		else:
-			print("ERROR: 找不到按钮!")
+# 设置弹出式UI
+func setup_popup_ui():
+	# 实例化弹出UI
+	popup_ui = popup_ui_scene.instantiate()
+	add_child(popup_ui)
+	
+	# 连接选择器变更信号
+	if popup_ui.has_signal("generator_selected"):
+		popup_ui.generator_selected.connect(_on_generator_selected)
+		print("成功连接generator_selected信号")
 	else:
-		print("ERROR: 找不到GeneratorUI节点!")
+		print("错误：popup_ui没有generator_selected信号")
+		# 列出所有可用信号
+		var signal_list = popup_ui.get_signal_list()
+		for sig in signal_list:
+			print("可用信号: ", sig.name)
+	
+	print("弹出式UI设置完成")
 
-# 更新按钮样式
-func update_button_styles():
-	if tree_button and flower_button:
-		if current_generator == GeneratorType.TREE:
-			tree_button.text = "已选择"
-			flower_button.text = "选择"
-		else:
-			tree_button.text = "选择"
-			flower_button.text = "已选择"
+# 处理生成器选择变更
+func _on_generator_selected(type):
+	print("生成器类型变更为: ", type)
+	current_generator = type
 
-# 树按钮点击处理
-func _on_tree_button_pressed():
-	print("树按钮被点击!")
-	current_generator = GeneratorType.TREE
-	update_selection_label()
-	update_button_styles()
-	print("当前选择: 树")
-
-# 花按钮点击处理
-func _on_flower_button_pressed():
-	print("花按钮被点击!")
-	current_generator = GeneratorType.FLOWER
-	update_selection_label()
-	update_button_styles()
-	print("当前选择: 花")
-
-# 更新选择标签
-func update_selection_label():
-	if current_selection_label:
-		var selection_text = "当前选择："
-		if current_generator == GeneratorType.TREE:
-			selection_text += "树"
-		else:
-			selection_text += "花"
-		current_selection_label.text = selection_text
-
+# 处理输入事件
 func _input(event):
 	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
+		# 如果事件已经被处理（例如被UI处理）则跳过
+		if get_viewport().is_input_handled():
+			print("事件已被UI处理")
+			return
+		
+		# 检查是否点击在显示按钮上
+		if popup_ui and popup_ui.show_button and popup_ui.show_button.visible:
+			# 简单检查点击位置是否在显示按钮的大致区域内
+			var button = popup_ui.show_button
+			var distance = event.position.distance_to(button.position + button.size/2)
+			if distance < 75:  # 给一个宽松的判定范围
+				print("点击在'打开生成界面'按钮附近")
+				return
+		
 		# 检查是否点击在树上，如果不是，则根据当前选择生成对应物体
 		var click_position = event.position
 		var is_on_tree = false
@@ -99,19 +87,30 @@ func _input(event):
 		var trees = get_node("Trees").get_children() if has_node("Trees") else []
 		for tree in trees:
 			var tree_area = tree.get_node("ClickArea")
-			if tree_area.get_global_transform().origin.distance_to(click_position) < 100:
+			if tree_area and tree_area.get_global_transform().origin.distance_to(click_position) < 100:
 				is_on_tree = true
 				break
 		
 		# 如果没有点击在树上，则根据当前选择生成对应物体
 		if not is_on_tree:
-			# 检查当前选择的生成器类型并生成对应物体
-			if current_generator == GeneratorType.TREE: # 树
-				print("生成树木!")
-				spawn_tree(click_position)
-			else: # 花
-				print("生成花朵!")
-				spawn_flower(click_position)
+			print("点击空白区域，当前选择: ", "树" if current_generator == GeneratorType.TREE else "花")
+			
+			# 计算生成费用
+			var cost = generator_costs[current_generator]
+			coins = Global.get_coins()  # 获取最新的金币数量
+			if coins >= cost:
+				# 根据当前选择生成物体
+				if current_generator == GeneratorType.TREE:
+					print("生成树木! 花费 ", cost, " 金币")
+					spawn_tree(click_position)
+				else:
+					print("生成花朵! 花费 ", cost, " 金币")
+					spawn_flower(click_position)
+				# 扣除金币
+				Global.spend_coins(cost)
+				print("剩余金币: ", Global.get_coins())
+			else:
+				print("金币不足! 需要 ", cost, " 金币，当前只有 ", coins, " 金币")
 
 # 生成花朵
 func spawn_flower(position):

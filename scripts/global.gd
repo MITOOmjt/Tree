@@ -2,7 +2,7 @@ extends Node
 
 signal coins_changed(amount: int)
 
-var coins: int = 20  # 初始金币，给玩家一些起始资金
+var coins: int = 5  # 初始金币，给玩家一些起始资金
 
 func add_coins(amount: int) -> void:
 	coins += amount

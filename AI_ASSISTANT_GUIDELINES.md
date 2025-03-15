@@ -56,6 +56,31 @@ AI助手在帮助用户编写或修改代码时，应主动检查：
 4. 确保所有变量和函数在使用前已正确声明
 5. 检查资源preload路径是否正确（应使用`res://scene/`或`res://scripts/`开头）
 
+## UI设计和交互指南
+
+1. **UI组件设计**：
+   - 按钮应具有清晰的视觉反馈（悬停效果、点击状态）
+   - 文本标签应使用适当的字体大小和颜色，确保可读性
+   - 面板和容器应有合适的边距和间距
+   - 提示信息例子：「按钮应该添加悬停效果以提高用户体验」
+
+2. **UI交互模式**：
+   - 可折叠UI应具有明确的打开/关闭控件
+   - 避免UI元素自动隐藏或突然消失，除非是预期行为
+   - 为交互操作提供适当的视觉和文本反馈
+   - 提示信息例子：「建议为这个UI面板添加可折叠功能和明确的关闭按钮」
+
+3. **输入处理**：
+   - 确保UI元素正确捕获和处理输入事件
+   - 防止点击穿透问题，避免UI点击影响下层游戏世界
+   - 正确处理信号连接和断开连接
+   - 提示信息例子：「这个UI面板需要防止点击穿透到游戏世界」
+
+4. **PopupPanel特殊处理**：
+   - 当使用PopupPanel时，注意处理其自动隐藏行为
+   - 如需保持面板可见，应实现防止自动关闭的机制
+   - 提示信息例子：「为防止PopupPanel自动关闭，需要实现自定义的popup_hide处理」
+
 ## 响应风格
 
 1. 回答应该简洁明了
@@ -75,13 +100,13 @@ AI助手在帮助用户编写或修改代码时，应主动检查：
    - 信号连接语法：使用 `node.signal_name.connect(callable)` 而非旧版的 `node.connect("signal_name", callable)`
    - 信号断开连接：使用 `node.disconnect("signal_name", Callable(self, "method_name"))` 
    - 示例：
-     ```gdscript
-     # 正确的Godot 4.3连接方式
-     button.pressed.connect(_on_button_pressed)
-     
-     # 错误的旧版连接方式
-     button.connect("pressed", _on_button_pressed)
-     ```
+	 ```gdscript
+	 # 正确的Godot 4.3连接方式
+	 button.pressed.connect(_on_button_pressed)
+	 
+	 # 错误的旧版连接方式
+	 button.connect("pressed", _on_button_pressed)
+	 ```
 7. **脚本版本检查**：
    - 修改脚本前，确认Godot项目使用的是哪个版本的脚本文件
    - 在修复语法错误或解析错误时，优先考虑完全重写文件而不是局部修改
