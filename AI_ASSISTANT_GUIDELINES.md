@@ -122,3 +122,15 @@ AI助手在帮助用户编写或修改代码时，应主动检查：
    - 所有脚本文件应位于`res://scripts/`目录下
    - 所有预加载资源路径应以`res://scene/`或`res://scripts/`开头
    - 提示信息例子：「资源路径应使用标准格式，如`res://scene/flower.tscn`而非`res://flower.tscn`」
+
+10. **GameConfig单例使用规范**：
+   - 生成物的费用、花朵和树木的金币产出配置应通过GameConfig单例进行管理
+   - 脚本中应使用_load_config()函数从GameConfig加载配置
+   - 不要在不同脚本中硬编码金币费用或产出值
+   - 提示信息例子：「生成物费用应从GameConfig加载，而非直接在脚本中设置固定值」
+
+11. **金币系统的修改和配置**：
+   - 金币消耗和获取应通过GameConfig中定义的配置进行管理
+   - 修改生成物费用时，应修改game_config.gd中的generator_costs字典
+   - 修改金币产出时，应修改game_config.gd中的coin_generation字典
+   - 提示信息例子：「要修改树的生成费用，请更新GameConfig.generator_costs[GeneratorType.TREE]的值」

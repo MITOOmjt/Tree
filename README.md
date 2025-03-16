@@ -13,6 +13,7 @@
 - 通过弹出式生成器面板选择生成对象类型
 - 可折叠的UI界面，支持手动关闭和重新打开
 - 美观的按钮样式和状态反馈
+- 中央配置系统，方便调整游戏平衡性
 
 ## 如何使用
 
@@ -43,7 +44,8 @@ tree/
 │   │   ├── ui.gd              # 界面控制脚本
 │   │   ├── direct_tree.gd     # 树木行为脚本
 │   │   ├── bird.gd            # 鸟的逻辑脚本
-│   │   └── global.gd          # 全局单例（金币系统）
+│   │   ├── global.gd          # 全局单例（金币系统）
+│   │   └── game_config.gd     # 游戏配置单例
 │   ├── .godot/                # Godot引擎配置文件
 │   ├── project.godot          # 项目配置文件
 │   └── icon.svg               # 项目图标
@@ -94,6 +96,42 @@ tree/
 6. 内置函数（_ready、_process等）
 7. 自定义函数
 8. 信号回调函数（通常以_on开头）
+
+## 游戏配置系统
+
+游戏使用GameConfig单例来集中管理配置参数。这使得修改游戏平衡性和各种数值变得简单。
+
+### 主要配置内容
+- **生成物费用**：在game_config.gd中的generator_costs字典中定义
+  ```gdscript
+  var generator_costs = {
+      GeneratorType.TREE: 5,   # 树木生成费用
+      GeneratorType.FLOWER: 1, # 花朵生成费用
+      GeneratorType.BIRD: 10   # 鸟类生成费用
+  }
+  ```
+
+- **金币产出配置**：在game_config.gd中的coin_generation字典中定义
+  ```gdscript
+  var coin_generation = {
+      "tree_coin_generation": 1,  # 树每次产生金币数量
+      "tree_coin_interval": 5.0,  # 树产生金币的间隔时间(秒)
+      "bird_click_reward": 1,     # 点击鸟获得的金币奖励
+      "flower_hover_reward": 2,   # 鼠标悬停在花上获得的金币奖励
+      "flower_hover_cooldown": 1.5 # 花悬停奖励的冷却时间(秒)
+  }
+  ```
+
+- **初始配置**：在game_config.gd中的initial_config字典中定义
+  ```gdscript
+  var initial_config = {
+      "starting_coins": 5,       # 初始金币数量
+      "default_generator": GeneratorType.FLOWER  # 默认选择的生成物类型
+  }
+  ```
+
+### 配置加载机制
+所有实体（树、花、鸟）都会在其_ready函数中调用_load_config()来从GameConfig单例加载配置。这确保了游戏数值的一致性和可配置性。
 
 ## 后续开发计划
 
