@@ -17,8 +17,35 @@ var show_button
 var manual_close = false  # 记录是否是手动关闭
 var allow_hide = false  # 控制是否允许面板隐藏
 
+# 费用和产出标签
+var tree_cost_label
+var flower_cost_label 
+var bird_cost_label
+var tree_output_label
+var flower_output_label
+var bird_output_label
+
+# 默认标签颜色
+var default_label_color = Color(0.807843, 0.807843, 0.807843, 1)
+var insufficient_funds_color = Color(0.9, 0.2, 0.2, 1)
+
+# GameConfig引用
+var game_config
+
 func _ready():
 	print("PopupUI脚本(_ready)：开始初始化...")
+	
+	# 获取GameConfig引用
+	game_config = get_node_or_null("/root/GameConfig")
+	if game_config:
+		print("PopupUI: 成功获取GameConfig引用")
+	else:
+		print("PopupUI: GameConfig不可用")
+	
+	# 连接到全局金币变化信号
+	if get_node_or_null("/root/Global"):
+		Global.coins_changed.connect(_on_coins_changed)
+		print("PopupUI: 已连接到金币变化信号")
 	
 	# 调试当前信号
 	var signal_list = get_signal_list()
@@ -36,6 +63,24 @@ func _ready():
 	# 获取按钮引用
 	tree_button = popup.get_node("MarginContainer/VBoxContainer/GeneratorList/TreeItem/TreeButton")
 	flower_button = popup.get_node("MarginContainer/VBoxContainer/GeneratorList/FlowerItem/FlowerButton")
+	
+	# 获取费用标签引用
+	tree_cost_label = popup.get_node("MarginContainer/VBoxContainer/GeneratorList/TreeItem/VBoxContainer/CostLabel")
+	flower_cost_label = popup.get_node("MarginContainer/VBoxContainer/GeneratorList/FlowerItem/VBoxContainer/CostLabel")
+	
+	# 创建树和花的产出标签
+	var tree_container = popup.get_node("MarginContainer/VBoxContainer/GeneratorList/TreeItem/VBoxContainer")
+	var flower_container = popup.get_node("MarginContainer/VBoxContainer/GeneratorList/FlowerItem/VBoxContainer")
+	
+	tree_output_label = Label.new()
+	tree_output_label.add_theme_font_size_override("font_size", 12)
+	tree_output_label.add_theme_color_override("font_color", default_label_color)
+	tree_container.add_child(tree_output_label)
+	
+	flower_output_label = Label.new()
+	flower_output_label.add_theme_font_size_override("font_size", 12)
+	flower_output_label.add_theme_color_override("font_color", default_label_color)
+	flower_container.add_child(flower_output_label)
 	
 	# 创建鸟按钮和项目
 	var generator_list = popup.get_node("MarginContainer/VBoxContainer/GeneratorList")
@@ -58,10 +103,15 @@ func _ready():
 	bird_name_label.add_theme_font_size_override("font_size", 16)
 	
 	# 创建费用标签
-	var bird_cost_label = Label.new()
+	bird_cost_label = Label.new()
 	bird_cost_label.text = "花费: 10金币"
 	bird_cost_label.add_theme_font_size_override("font_size", 12)
-	bird_cost_label.add_theme_color_override("font_color", Color(0.807843, 0.807843, 0.807843, 1))
+	bird_cost_label.add_theme_color_override("font_color", default_label_color)
+	
+	# 创建产出标签
+	bird_output_label = Label.new()
+	bird_output_label.add_theme_font_size_override("font_size", 12)
+	bird_output_label.add_theme_color_override("font_color", default_label_color)
 	
 	# 创建选择按钮
 	bird_button = Button.new()
@@ -71,6 +121,7 @@ func _ready():
 	# 添加所有元素
 	bird_text_container.add_child(bird_name_label)
 	bird_text_container.add_child(bird_cost_label)
+	bird_text_container.add_child(bird_output_label)
 	
 	bird_item.add_child(bird_color_rect)
 	bird_item.add_child(bird_text_container)
@@ -134,6 +185,9 @@ func _ready():
 	
 	# 显示PopupPanel
 	popup.popup()
+	
+	# 初始更新UI信息
+	update_ui_from_config()
 	
 	print("PopupUI: 初始化完成")
 
@@ -230,3 +284,68 @@ func set_generator(type):
 # 获取当前生成器
 func get_current_generator():
 	return current_generator
+
+# 从GameConfig更新显示信息
+func update_ui_from_config():
+	if not game_config:
+		return
+		
+	# 更新树木信息
+	var tree_cost = game_config.get_generator_cost(GeneratorType.TREE)
+	var tree_output = game_config.get_coin_generation("tree_coin_generation")
+	var tree_interval = game_config.get_coin_generation("tree_coin_interval")
+	tree_cost_label.text = "花费: " + str(tree_cost) + "金币"
+	tree_output_label.text = "产出: 每" + str(tree_interval) + "秒 " + str(tree_output) + "金币"
+	
+	# 更新花朵信息
+	var flower_cost = game_config.get_generator_cost(GeneratorType.FLOWER)
+	var flower_reward = game_config.get_coin_generation("flower_hover_reward")
+	var flower_cooldown = game_config.get_coin_generation("flower_hover_cooldown")
+	flower_cost_label.text = "花费: " + str(flower_cost) + "金币"
+	flower_output_label.text = "产出: 悬停每" + str(flower_cooldown) + "秒 " + str(flower_reward) + "金币"
+	
+	# 更新鸟类信息
+	var bird_cost = game_config.get_generator_cost(GeneratorType.BIRD)
+	var bird_reward = game_config.get_coin_generation("bird_click_reward")
+	bird_cost_label.text = "花费: " + str(bird_cost) + "金币"
+	bird_output_label.text = "产出: 点击获得" + str(bird_reward) + "金币"
+	
+	# 更新标签颜色
+	update_cost_label_colors()
+
+# 更新费用标签颜色
+func update_cost_label_colors():
+	if not game_config:
+		return
+		
+	var current_coins = Global.get_coins()
+	
+	# 更新树木费用标签颜色
+	var tree_cost = game_config.get_generator_cost(GeneratorType.TREE)
+	if current_coins < tree_cost:
+		tree_cost_label.add_theme_color_override("font_color", insufficient_funds_color)
+	else:
+		tree_cost_label.add_theme_color_override("font_color", default_label_color)
+	
+	# 更新花朵费用标签颜色
+	var flower_cost = game_config.get_generator_cost(GeneratorType.FLOWER)
+	if current_coins < flower_cost:
+		flower_cost_label.add_theme_color_override("font_color", insufficient_funds_color)
+	else:
+		flower_cost_label.add_theme_color_override("font_color", default_label_color)
+	
+	# 更新鸟类费用标签颜色
+	var bird_cost = game_config.get_generator_cost(GeneratorType.BIRD)
+	if current_coins < bird_cost:
+		bird_cost_label.add_theme_color_override("font_color", insufficient_funds_color)
+	else:
+		bird_cost_label.add_theme_color_override("font_color", default_label_color)
+
+# 处理金币变化事件
+func _on_coins_changed(amount):
+	update_cost_label_colors()
+
+# 每帧更新
+func _process(delta):
+	if visible and not manual_close:
+		update_ui_from_config()
