@@ -7,7 +7,7 @@ enum GeneratorType {TREE = 0, FLOWER = 1, BIRD = 2}
 
 # 生成费用配置
 var generator_costs = {
-	GeneratorType.TREE: 3,   # 树木生成费用：3金币
+	GeneratorType.TREE: 5,   # 树木生成费用：5金币
 	GeneratorType.FLOWER: 1, # 花朵生成费用：1金币
 	GeneratorType.BIRD: 10   # 鸟类生成费用：10金币
 }

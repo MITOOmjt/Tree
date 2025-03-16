@@ -12,11 +12,11 @@ var colors = [
 
 # 预加载浮动文本场景
 var floating_text_scene = preload("res://scene/floating_text.tscn")
-# 鼠标悬停获得金币的量
+# 鼠标悬停获得金币的量（默认值，会尝试从GameConfig加载）
 var hover_coin_reward = 1
 # 悬停冷却计时器
 var hover_cooldown = 0.0
-# 悬停冷却时间（秒）
+# 悬停冷却时间（秒）（默认值，会尝试从GameConfig加载）
 var hover_cooldown_time = 1.5
 # 是否正在悬停
 var is_hovering = false
@@ -32,7 +32,26 @@ func _ready():
 	set_process(true)
 	set_process_input(true)
 	
-	print("花的脚本初始化完成，冷却时间:", hover_cooldown_time, "检测半径:", detection_radius)
+	# 尝试从GameConfig加载配置
+	_load_config()
+	
+	print("花的脚本初始化完成，冷却时间:", hover_cooldown_time, "检测半径:", detection_radius, "悬停奖励:", hover_coin_reward)
+
+# 从GameConfig加载配置
+func _load_config():
+	var game_config = get_node_or_null("/root/GameConfig")
+	if game_config:
+		# 加载悬停奖励金币数量
+		if game_config.coin_generation.has("flower_hover_reward"):
+			hover_coin_reward = game_config.coin_generation.flower_hover_reward
+			print("从GameConfig加载花朵悬停奖励:", hover_coin_reward)
+		
+		# 加载悬停冷却时间
+		if game_config.coin_generation.has("flower_hover_cooldown"):
+			hover_cooldown_time = game_config.coin_generation.flower_hover_cooldown
+			print("从GameConfig加载花朵悬停冷却时间:", hover_cooldown_time)
+	else:
+		print("GameConfig单例不可用，使用默认配置")
 
 func _process(delta):
 	# 处理悬停冷却

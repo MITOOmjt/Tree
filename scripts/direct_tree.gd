@@ -1,5 +1,8 @@
 extends Node2D
 
+# 树每次产生金币数量（默认值）
+var coin_generation_amount = 1
+
 @onready var coin_timer = $CoinTimer
 @onready var click_area = $ClickArea
 
@@ -8,7 +11,27 @@ func _ready():
 	
 	# 连接计时器的timeout信号
 	coin_timer.timeout.connect(_on_coin_timer_timeout)
-	print("金币计时器已连接")
+	
+	# 尝试从GameConfig加载配置
+	_load_config()
+	
+	print("金币计时器已连接，产生金币:", coin_generation_amount, "，间隔:", coin_timer.wait_time, "秒")
+
+# 从GameConfig加载配置
+func _load_config():
+	var game_config = get_node_or_null("/root/GameConfig")
+	if game_config:
+		# 加载树产生金币数量
+		if game_config.coin_generation.has("tree_coin_generation"):
+			coin_generation_amount = game_config.coin_generation.tree_coin_generation
+			print("从GameConfig加载树产生金币量:", coin_generation_amount)
+		
+		# 加载树产生金币间隔
+		if game_config.coin_generation.has("tree_coin_interval"):
+			coin_timer.wait_time = game_config.coin_generation.tree_coin_interval
+			print("从GameConfig加载树产生金币间隔:", coin_timer.wait_time)
+	else:
+		print("GameConfig单例不可用，使用默认配置")
 
 # 检查点是否在树区域内（保留此函数供背景管理器调用）
 func _is_point_in_tree(point: Vector2) -> bool:
@@ -30,6 +53,6 @@ func _is_point_in_triangle(p: Vector2, a: Vector2, b: Vector2, c: Vector2) -> bo
 	return s >= 0 and t >= 0 and (s + t) <= 1
 
 func _on_coin_timer_timeout():
-	# 每次计时器超时时增加1金币
-	Global.add_coins(1)
-	print("树产生1金币，当前总金币: ", Global.get_coins()) 
+	# 每次计时器超时时增加配置的金币数量
+	Global.add_coins(coin_generation_amount)
+	print("树产生", coin_generation_amount, "金币，当前总金币: ", Global.get_coins()) 
