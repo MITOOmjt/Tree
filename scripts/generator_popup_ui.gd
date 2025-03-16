@@ -4,11 +4,12 @@ extends CanvasLayer
 signal generator_selected(type)
 
 # 生成器类型枚举
-enum GeneratorType {TREE = 0, FLOWER = 1}
+enum GeneratorType {TREE = 0, FLOWER = 1, BIRD = 2}
 
 # 变量
 var tree_button
 var flower_button
+var bird_button
 var current_selection_label
 var current_generator = GeneratorType.FLOWER  # 默认选择花
 var close_button
@@ -35,6 +36,24 @@ func _ready():
 	# 获取按钮引用
 	tree_button = popup.get_node("MarginContainer/VBoxContainer/GeneratorList/TreeItem/TreeButton")
 	flower_button = popup.get_node("MarginContainer/VBoxContainer/GeneratorList/FlowerItem/FlowerButton")
+	
+	# 创建鸟按钮和项目
+	var generator_list = popup.get_node("MarginContainer/VBoxContainer/GeneratorList")
+	var bird_item = HBoxContainer.new()
+	bird_item.name = "BirdItem"
+	
+	var bird_label = Label.new()
+	bird_label.text = "鸟："
+	bird_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	
+	bird_button = Button.new()
+	bird_button.text = "选择"
+	bird_button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	
+	bird_item.add_child(bird_label)
+	bird_item.add_child(bird_button)
+	generator_list.add_child(bird_item)
+	
 	current_selection_label = popup.get_node("MarginContainer/VBoxContainer/CurrentSelectionLabel")
 	
 	# 创建关闭按钮
@@ -70,9 +89,10 @@ func _ready():
 	show_button.pressed.connect(_on_show_button_pressed)
 	
 	# 连接按钮信号
-	if tree_button and flower_button:
+	if tree_button and flower_button and bird_button:
 		tree_button.pressed.connect(_on_tree_button_pressed)
 		flower_button.pressed.connect(_on_flower_button_pressed)
+		bird_button.pressed.connect(_on_bird_button_pressed)
 		print("PopupUI: 按钮信号已连接")
 	
 	# 初始UI状态
@@ -140,25 +160,39 @@ func _on_flower_button_pressed():
 	update_button_styles()
 	emit_signal("generator_selected", current_generator)
 
+# 鸟按钮点击处理
+func _on_bird_button_pressed():
+	print("PopupUI: 鸟按钮被点击")
+	current_generator = GeneratorType.BIRD
+	update_selection_label()
+	update_button_styles()
+	emit_signal("generator_selected", current_generator)
+
 # 更新选择标签
 func update_selection_label():
 	if current_selection_label:
 		var selection_text = "当前选择："
 		if current_generator == GeneratorType.TREE:
 			selection_text += "树"
-		else:
+		elif current_generator == GeneratorType.FLOWER:
 			selection_text += "花"
+		else:
+			selection_text += "鸟"
 		current_selection_label.text = selection_text
 
 # 更新按钮样式
 func update_button_styles():
-	if tree_button and flower_button:
+	if tree_button and flower_button and bird_button:
+		tree_button.text = "选择"
+		flower_button.text = "选择"
+		bird_button.text = "选择"
+		
 		if current_generator == GeneratorType.TREE:
 			tree_button.text = "已选择"
-			flower_button.text = "选择"
-		else:
-			tree_button.text = "选择"
+		elif current_generator == GeneratorType.FLOWER:
 			flower_button.text = "已选择"
+		elif current_generator == GeneratorType.BIRD:
+			bird_button.text = "已选择"
 
 # 设置当前生成器
 func set_generator(type):
@@ -168,4 +202,4 @@ func set_generator(type):
 
 # 获取当前生成器
 func get_current_generator():
-	return current_generator 
+	return current_generator
