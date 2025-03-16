@@ -289,26 +289,37 @@ func get_current_generator():
 func update_ui_from_config():
 	if not game_config:
 		return
+	
+	# 获取背景管理器引用，用于获取动态成本
+	var background_manager = get_node_or_null("/root/Main")
+	if not background_manager:
+		print("PopupUI: 无法获取背景管理器引用，将使用GameConfig中的基础成本")
 		
 	# 更新树木信息
-	var tree_cost = game_config.get_generator_cost(GeneratorType.TREE)
+	var tree_cost = background_manager.generator_costs[GeneratorType.TREE] if background_manager else game_config.get_generator_cost(GeneratorType.TREE)
 	var tree_output = game_config.get_coin_generation("tree_coin_generation")
 	var tree_interval = game_config.get_coin_generation("tree_coin_interval")
+	var tree_factor = game_config.get_cost_growth_factor(GeneratorType.TREE)
+	var tree_count = background_manager.generator_counts[GeneratorType.TREE] if background_manager else 0
 	tree_cost_label.text = "花费: " + str(tree_cost) + "金币"
-	tree_output_label.text = "产出: 每" + str(tree_interval) + "秒 " + str(tree_output) + "金币"
+	tree_output_label.text = "产出: 每" + str(tree_interval) + "秒 " + str(tree_output) + "金币\n成本增长: x" + str(tree_factor) + "\n已建造: " + str(tree_count)
 	
 	# 更新花朵信息
-	var flower_cost = game_config.get_generator_cost(GeneratorType.FLOWER)
+	var flower_cost = background_manager.generator_costs[GeneratorType.FLOWER] if background_manager else game_config.get_generator_cost(GeneratorType.FLOWER)
 	var flower_reward = game_config.get_coin_generation("flower_hover_reward")
 	var flower_cooldown = game_config.get_coin_generation("flower_hover_cooldown")
+	var flower_factor = game_config.get_cost_growth_factor(GeneratorType.FLOWER)
+	var flower_count = background_manager.generator_counts[GeneratorType.FLOWER] if background_manager else 0
 	flower_cost_label.text = "花费: " + str(flower_cost) + "金币"
-	flower_output_label.text = "产出: 悬停每" + str(flower_cooldown) + "秒 " + str(flower_reward) + "金币"
+	flower_output_label.text = "产出: 悬停每" + str(flower_cooldown) + "秒 " + str(flower_reward) + "金币\n成本增长: x" + str(flower_factor) + "\n已建造: " + str(flower_count)
 	
 	# 更新鸟类信息
-	var bird_cost = game_config.get_generator_cost(GeneratorType.BIRD)
+	var bird_cost = background_manager.generator_costs[GeneratorType.BIRD] if background_manager else game_config.get_generator_cost(GeneratorType.BIRD)
 	var bird_reward = game_config.get_coin_generation("bird_click_reward")
+	var bird_factor = game_config.get_cost_growth_factor(GeneratorType.BIRD)
+	var bird_count = background_manager.generator_counts[GeneratorType.BIRD] if background_manager else 0
 	bird_cost_label.text = "花费: " + str(bird_cost) + "金币"
-	bird_output_label.text = "产出: 点击获得" + str(bird_reward) + "金币"
+	bird_output_label.text = "产出: 点击获得" + str(bird_reward) + "金币\n成本增长: x" + str(bird_factor) + "\n已建造: " + str(bird_count)
 	
 	# 更新标签颜色
 	update_cost_label_colors()
@@ -319,23 +330,26 @@ func update_cost_label_colors():
 		return
 		
 	var current_coins = Global.get_coins()
+	var background_manager = get_node_or_null("/root/Main")
+	if not background_manager:
+		return
 	
 	# 更新树木费用标签颜色
-	var tree_cost = game_config.get_generator_cost(GeneratorType.TREE)
+	var tree_cost = background_manager.generator_costs[GeneratorType.TREE]
 	if current_coins < tree_cost:
 		tree_cost_label.add_theme_color_override("font_color", insufficient_funds_color)
 	else:
 		tree_cost_label.add_theme_color_override("font_color", default_label_color)
 	
 	# 更新花朵费用标签颜色
-	var flower_cost = game_config.get_generator_cost(GeneratorType.FLOWER)
+	var flower_cost = background_manager.generator_costs[GeneratorType.FLOWER]
 	if current_coins < flower_cost:
 		flower_cost_label.add_theme_color_override("font_color", insufficient_funds_color)
 	else:
 		flower_cost_label.add_theme_color_override("font_color", default_label_color)
 	
 	# 更新鸟类费用标签颜色
-	var bird_cost = game_config.get_generator_cost(GeneratorType.BIRD)
+	var bird_cost = background_manager.generator_costs[GeneratorType.BIRD]
 	if current_coins < bird_cost:
 		bird_cost_label.add_theme_color_override("font_color", insufficient_funds_color)
 	else:

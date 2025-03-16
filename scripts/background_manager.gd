@@ -22,6 +22,27 @@ var generator_costs = {
 	GeneratorType.BIRD: 10   # 鸟类生成费用：10金币
 }
 
+# 跟踪已生成物体数量
+var generator_counts = {
+	GeneratorType.TREE: 0,   # 已生成树木数量
+	GeneratorType.FLOWER: 0, # 已生成花朵数量
+	GeneratorType.BIRD: 0    # 已生成鸟类数量
+}
+
+# 费用增长系数
+var cost_growth_factors = {
+	GeneratorType.TREE: 1.5,    # 树木费用增长系数
+	GeneratorType.FLOWER: 1.2,  # 花朵费用增长系数
+	GeneratorType.BIRD: 1.8     # 鸟费用增长系数
+}
+
+# 初始基础费用
+var base_generator_costs = {
+	GeneratorType.TREE: 3,   # 树木初始费用
+	GeneratorType.FLOWER: 1, # 花朵初始费用
+	GeneratorType.BIRD: 10   # 鸟类初始费用
+}
+
 # UI变量
 var popup_ui
 
@@ -126,8 +147,8 @@ func _handle_bird_generation(click_position):
 	if clicked_tree:
 		print("点击在树上，当前选择: 鸟")
 		
-		# 计算生成费用
-		var cost = generator_costs[GeneratorType.BIRD]
+		# 计算生成费用 - 使用动态成本
+		var cost = calculate_current_cost(GeneratorType.BIRD)
 		coins = Global.get_coins()  # 获取最新的金币数量
 		
 		# 检查是否有足够金币
@@ -139,6 +160,12 @@ func _handle_bird_generation(click_position):
 			var bird = bird_scene.instantiate()
 			bird.position = local_pos
 			clicked_tree.add_child(bird)
+			
+			# 更新鸟的数量
+			generator_counts[GeneratorType.BIRD] += 1
+			
+			# 更新动态成本
+			update_generator_cost(GeneratorType.BIRD)
 			
 			# 扣除金币
 			Global.spend_coins(cost)
@@ -173,8 +200,8 @@ func _handle_normal_generation(click_position):
 	if not is_on_tree:
 		print("点击空白区域，当前选择: ", _get_generator_name(current_generator))
 		
-		# 计算生成费用
-		var cost = generator_costs[current_generator]
+		# 计算动态生成费用
+		var cost = calculate_current_cost(current_generator)
 		coins = Global.get_coins()  # 获取最新的金币数量
 		
 		print("【调试】当前选择的生成物：", _get_generator_name(current_generator), 
@@ -185,9 +212,17 @@ func _handle_normal_generation(click_position):
 			if current_generator == GeneratorType.TREE:
 				print("生成树木! 花费 ", cost, " 金币")
 				spawn_tree(click_position)
+				# 更新数量
+				generator_counts[GeneratorType.TREE] += 1
+				# 更新成本
+				update_generator_cost(GeneratorType.TREE)
 			elif current_generator == GeneratorType.FLOWER:
 				print("生成花朵! 花费 ", cost, " 金币")
 				spawn_flower(click_position)
+				# 更新数量
+				generator_counts[GeneratorType.FLOWER] += 1
+				# 更新成本
+				update_generator_cost(GeneratorType.FLOWER)
 			
 			# 扣除金币
 			print("【调试】扣除前金币：", Global.get_coins())
@@ -225,12 +260,35 @@ func spawn_tree(position):
 	
 	get_node("Trees").add_child(tree) 
 
+# 计算当前生成物的动态成本
+func calculate_current_cost(type):
+	var base_cost = base_generator_costs[type]
+	var count = generator_counts[type]
+	var factor = cost_growth_factors[type]
+	
+	# 如果是首次生成，使用基础成本
+	if count == 0:
+		return base_cost
+	
+	# 根据已生成数量和增长系数计算动态成本
+	# 公式: base_cost * (factor ^ count)
+	var dynamic_cost = base_cost * pow(factor, count)
+	
+	# 向上取整，避免小数
+	return int(ceil(dynamic_cost))
+
+# 更新生成物成本
+func update_generator_cost(type):
+	var new_cost = calculate_current_cost(type)
+	generator_costs[type] = new_cost
+	print("更新", _get_generator_name(type), "的生成成本为:", new_cost, "金币")
+	
+	# 如果UI存在，通知UI更新
+	if popup_ui:
+		popup_ui.update_ui_from_config()
+
 # 尝试从GameConfig加载配置
 func _try_load_config():
-	# 这里我们可以在项目正式加载GameConfig单例后更新此处
-	print("检查游戏配置...")
-	
-	# 通过调用get_node尝试获取自动加载的GameConfig
 	var game_config = get_node_or_null("/root/GameConfig")
 	if game_config:
 		print("成功找到GameConfig单例")
@@ -247,10 +305,21 @@ func _try_load_config():
 			var local_type = config_to_local_enum[config_type]
 			var cost = game_config.get_generator_cost(config_type)
 			generator_costs[local_type] = cost
+			base_generator_costs[local_type] = cost  # 同时设置基础成本
+		
+		# 加载费用增长系数
+		for config_type in config_to_local_enum:
+			var local_type = config_to_local_enum[config_type]
+			var factor = game_config.get_cost_growth_factor(config_type)
+			cost_growth_factors[local_type] = factor
 		
 		print("已从GameConfig更新生成费用配置:")
 		for type in generator_costs:
 			print("- ", _get_generator_name(type), ": ", generator_costs[type], " 金币")
+		
+		print("已从GameConfig更新费用增长系数:")
+		for type in cost_growth_factors:
+			print("- ", _get_generator_name(type), ": x", cost_growth_factors[type])
 		
 		# 尝试更新默认生成器
 		if game_config.initial_config.has("default_generator"):

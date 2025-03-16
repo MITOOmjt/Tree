@@ -12,6 +12,13 @@ var generator_costs = {
 	GeneratorType.BIRD: 10   # 鸟类生成费用：10金币
 }
 
+# 生成费用增长系数配置 - 每生成一个对应的生成物，其费用将乘以此系数
+var cost_growth_factors = {
+	GeneratorType.TREE: 1.5,    # 树木费用增长系数
+	GeneratorType.FLOWER: 1.2,  # 花朵费用增长系数
+	GeneratorType.BIRD: 1.8     # 鸟费用增长系数
+}
+
 # 金币产出配置
 var coin_generation = {
 	"tree_coin_generation": 1,  # 树每次产生金币数量
@@ -34,6 +41,14 @@ func get_generator_cost(type):
 # 设置生成物费用
 func set_generator_cost(type, cost):
 	generator_costs[type] = cost
+
+# 获取生成物费用增长系数
+func get_cost_growth_factor(type):
+	return cost_growth_factors.get(type, 1.0)
+
+# 设置生成物费用增长系数  
+func set_cost_growth_factor(type, factor):
+	cost_growth_factors[type] = factor
 
 # 获取金币产出配置
 func get_coin_generation(key):
