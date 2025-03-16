@@ -21,7 +21,23 @@ var generator_templates = {
 			"interval": 5.0,            # 产出间隔(秒)
 		},
 		"placement": "ground",          # 放置类型: ground表示放置在地面/背景
-		"container_node": "Trees"       # 容器节点名称
+		"container_node": "Trees",       # 容器节点名称
+		"abilities": {                  # 能力系统
+			"efficiency": {             # 效率能力 - 增加金币产出
+				"level": 1,             # 当前等级
+				"base_cost": 10,        # 升级基础成本
+				"growth_factor": 1.5,   # 升级成本增长系数
+				"effect_per_level": 0.2, # 每级增加20%产出
+				"max_level": 10         # 最大等级
+			},
+			"speed": {                  # 速度能力 - 减少产出间隔
+				"level": 1,
+				"base_cost": 15,
+				"growth_factor": 1.7,
+				"effect_per_level": 0.1, # 每级减少10%间隔时间
+				"max_level": 10
+			}
+		}
 	},
 	
 	GeneratorType.FLOWER: {
@@ -37,7 +53,23 @@ var generator_templates = {
 			"cooldown": 1.5,            # 产出冷却时间(秒)
 		},
 		"placement": "ground",          # 放置类型: ground表示放置在地面/背景
-		"container_node": "Flowers"     # 容器节点名称
+		"container_node": "Flowers",     # 容器节点名称
+		"abilities": {                  # 能力系统
+			"efficiency": {             # 效率能力 - 增加金币产出
+				"level": 1,             # 当前等级
+				"base_cost": 8,         # 升级基础成本
+				"growth_factor": 1.4,   # 升级成本增长系数
+				"effect_per_level": 0.25, # 每级增加25%产出
+				"max_level": 10         # 最大等级
+			},
+			"cooldown": {               # 冷却能力 - 减少冷却时间
+				"level": 1,
+				"base_cost": 12,
+				"growth_factor": 1.6,
+				"effect_per_level": 0.12, # 每级减少12%冷却时间
+				"max_level": 10
+			}
+		}
 	},
 	
 	GeneratorType.BIRD: {
@@ -52,7 +84,16 @@ var generator_templates = {
 			"amount": 1,                # 产出金币数量
 		},
 		"placement": "on_tree",         # 放置类型: on_tree表示放置在树上
-		"container_node": ""            # 容器节点名称(为空表示直接添加到父节点)
+		"container_node": "",            # 容器节点名称(为空表示直接添加到父节点)
+		"abilities": {                  # 能力系统
+			"efficiency": {             # 效率能力 - 增加金币产出
+				"level": 1,             # 当前等级
+				"base_cost": 15,        # 升级基础成本
+				"growth_factor": 2.0,   # 升级成本增长系数
+				"effect_per_level": 0.3, # 每级增加30%产出
+				"max_level": 10         # 最大等级
+			}
+		}
 	}
 }
 
@@ -171,3 +212,97 @@ func register_generator(id, config):
 	else:
 		print("注册失败: 生成物ID已存在")
 		return false 
+
+# 能力系统方法
+
+# 获取生成物的能力列表
+func get_generator_abilities(type):
+	var template = get_generator_template(type)
+	if template and template.has("abilities"):
+		return template.abilities
+	return {}
+
+# 获取特定能力的当前等级
+func get_ability_level(type, ability_name):
+	var abilities = get_generator_abilities(type)
+	if abilities.has(ability_name):
+		return abilities[ability_name].level
+	return 1
+
+# 计算能力升级成本
+func calculate_ability_upgrade_cost(type, ability_name):
+	var abilities = get_generator_abilities(type)
+	if abilities.has(ability_name):
+		var ability = abilities[ability_name]
+		var level = ability.level
+		var base_cost = ability.base_cost
+		var growth_factor = ability.growth_factor
+		
+		# 如果已达到最大等级，返回-1表示无法升级
+		if level >= ability.max_level:
+			return -1
+			
+		# 计算升级成本: base_cost * (growth_factor ^ (level - 1))
+		var cost = base_cost * pow(growth_factor, level - 1)
+		return int(ceil(cost))
+	return 0
+
+# 升级特定能力
+func upgrade_ability(type, ability_name):
+	var abilities = get_generator_abilities(type)
+	if abilities.has(ability_name):
+		var ability = abilities[ability_name]
+		
+		# 检查是否已达最大等级
+		if ability.level >= ability.max_level:
+			print("能力", ability_name, "已达到最大等级")
+			return false
+			
+		# 增加等级
+		ability.level += 1
+		print("成功升级", get_generator_name(type), "的", ability_name, "能力到", ability.level, "级")
+		return true
+	return false
+
+# 获取能力效果倍数（用于计算实际产出效率）
+func get_ability_effect_multiplier(type, ability_name):
+	var abilities = get_generator_abilities(type)
+	if abilities.has(ability_name):
+		var ability = abilities[ability_name]
+		var level = ability.level
+		var effect_per_level = ability.effect_per_level
+		
+		# 计算效果倍数: 1 + (level - 1) * effect_per_level
+		return 1 + (level - 1) * effect_per_level
+	return 1.0  # 默认无效果
+
+# 获取能力描述
+func get_ability_description(type, ability_name):
+	var abilities = get_generator_abilities(type)
+	if abilities.has(ability_name):
+		var ability = abilities[ability_name]
+		var effect_percent = ability.effect_per_level * 100
+		
+		match ability_name:
+			"efficiency":
+				return "提高金币产出效率，每级增加" + str(effect_percent) + "%"
+			"speed":
+				return "减少产出间隔时间，每级减少" + str(effect_percent) + "%"
+			"cooldown":
+				return "减少冷却时间，每级减少" + str(effect_percent) + "%"
+			_:
+				return "提高" + ability_name + "，每级" + str(effect_percent) + "%"
+	
+	return "未知能力" 
+
+# 计算生成器当前奖励值（适用于任何生成器类型）
+func calculate_generator_reward(generator_type):
+	var reward = 0
+	var template = get_generator_template(generator_type)
+	
+	if template and template.generation.has("amount"):
+		var base_amount = template.generation.amount
+		var efficiency_multiplier = get_ability_effect_multiplier(generator_type, "efficiency")
+		reward = base_amount * efficiency_multiplier
+	
+	return reward 

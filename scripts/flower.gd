@@ -118,9 +118,24 @@ func _check_mouse_hover():
 
 # 给予悬停奖励
 func _give_hover_reward():
+	# 每次给予奖励前重新计算奖励值
+	var game_config = get_node_or_null("/root/GameConfig")
+	if game_config:
+		hover_coin_reward = game_config.calculate_generator_reward(game_config.GeneratorType.FLOWER)
+	
 	# 增加金币
 	Global.add_coins(hover_coin_reward)
-	print("花产生", hover_coin_reward, "金币！当前总金币:", Global.get_coins())
+	
+	# 获取调试信息
+	var debug_multiplier = 1.0
+	if game_config:
+		debug_multiplier = game_config.get_ability_effect_multiplier(
+			game_config.GeneratorType.FLOWER, "efficiency")
+	
+	print("花产生", hover_coin_reward, "金币！当前总金币:", Global.get_coins(), 
+		"，奖励配置值:", hover_coin_reward,
+		"，效率乘数:", debug_multiplier,
+		"，当前花朵设置:", self.hover_coin_reward)
 	
 	# 在花的位置显示浮动文本
 	var floating_text = floating_text_scene.instantiate()
@@ -162,12 +177,33 @@ func _on_area_2d_mouse_exited():
 func _load_config():
 	var game_config = get_node_or_null("/root/GameConfig")
 	if game_config:
+		print("花朵执行_load_config()...")
+		
+		# 使用通用方法计算奖励值
+		var old_reward = hover_coin_reward
+		hover_coin_reward = game_config.calculate_generator_reward(game_config.GeneratorType.FLOWER)
+		
+		# 获取调试信息
 		var template = game_config.get_generator_template(game_config.GeneratorType.FLOWER)
-		if template and template.generation.has("amount"):
-			hover_coin_reward = template.generation.amount
-			print("从GameConfig加载花悬停金币奖励:", hover_coin_reward)
-		if template.generation.has("cooldown"):
-			hover_cooldown_time = template.generation.cooldown
-			print("从GameConfig加载花悬停冷却时间:", hover_cooldown_time)
+		var base_amount = template.generation.amount if template and template.generation.has("amount") else 0
+		var efficiency_multiplier = game_config.get_ability_effect_multiplier(
+			game_config.GeneratorType.FLOWER, "efficiency")
+		
+		print("从GameConfig加载花悬停金币奖励:", hover_coin_reward,
+			"(基础:", base_amount, "效率乘数:", efficiency_multiplier, 
+			"旧值:", old_reward, ")")
+		
+		# 处理冷却时间
+		if template and template.generation.has("cooldown"):
+			var base_cooldown = template.generation.cooldown
+			var cooldown_multiplier = game_config.get_ability_effect_multiplier(
+				game_config.GeneratorType.FLOWER, "cooldown")
+			
+			var old_cooldown = hover_cooldown_time
+			hover_cooldown_time = base_cooldown / cooldown_multiplier
+			
+			print("从GameConfig加载花悬停冷却时间:", hover_cooldown_time,
+				"(基础:", base_cooldown, "冷却乘数:", cooldown_multiplier,
+				"旧值:", old_cooldown, ")")
 	else:
 		print("GameConfig单例不可用，使用默认花悬停配置") 

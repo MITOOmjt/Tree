@@ -18,10 +18,21 @@ func _ready():
 func _load_config():
 	var game_config = get_node_or_null("/root/GameConfig")
 	if game_config:
+		print("鸟执行_load_config()...")
+		
+		# 使用通用方法计算奖励值
+		var old_reward = coin_reward
+		coin_reward = game_config.calculate_generator_reward(game_config.GeneratorType.BIRD)
+		
+		# 获取调试信息
 		var template = game_config.get_generator_template(game_config.GeneratorType.BIRD)
-		if template and template.generation.has("amount"):
-			coin_reward = template.generation.amount
-			print("从GameConfig加载鸟点击奖励:", coin_reward)
+		var base_amount = template.generation.amount if template and template.generation.has("amount") else 0
+		var efficiency_multiplier = game_config.get_ability_effect_multiplier(
+			game_config.GeneratorType.BIRD, "efficiency")
+		
+		print("从GameConfig加载鸟点击金币奖励:", coin_reward,
+			"(基础:", base_amount, "效率乘数:", efficiency_multiplier,
+			"旧值:", old_reward, ")")
 	else:
 		print("GameConfig单例不可用，使用默认鸟点击配置")
 
@@ -36,7 +47,12 @@ func _input(event):
 		
 		# 检查点击是否在形状内
 		if _is_point_in_bird_shape(mouse_pos):
-			print("点击了鸟，获得", coin_reward, "金币")
+			# 每次点击前重新计算奖励值
+			var game_config = get_node_or_null("/root/GameConfig")
+			if game_config:
+				coin_reward = game_config.calculate_generator_reward(game_config.GeneratorType.BIRD)
+			
+			print("点击了鸟，获得", coin_reward, "金币，配置的奖励值:", coin_reward)
 			
 			# 增加金币
 			Global.add_coins(coin_reward)

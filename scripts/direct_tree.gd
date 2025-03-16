@@ -22,20 +22,43 @@ func _ready():
 	# 从GameConfig加载配置
 	_load_config()
 	
-	print("金币计时器已连接，产生金币:", coin_generation_amount, "，间隔:", coin_timer.wait_time, "秒")
+	# 添加到trees组，以便背景管理器可以找到所有树木
+	add_to_group("trees")
+	
+	print("树已准备就绪，产生金币:", coin_generation_amount, "，间隔:", coin_timer.wait_time, "秒")
 
 # 从GameConfig加载配置
 func _load_config():
 	var game_config = get_node_or_null("/root/GameConfig")
 	if game_config:
-		var template = game_config.get_generator_template(game_config.GeneratorType.TREE)
-		if template and template.generation.has("amount"):
-			coin_generation_amount = template.generation.amount
-			print("从GameConfig加载树产生金币量:", coin_generation_amount)
+		print("树执行_load_config()...")
 		
-		if template.generation.has("interval"):
-			coin_timer.wait_time = template.generation.interval
-			print("从GameConfig加载树产生金币间隔:", coin_timer.wait_time)
+		# 使用通用方法计算奖励值
+		var old_amount = coin_generation_amount
+		coin_generation_amount = game_config.calculate_generator_reward(game_config.GeneratorType.TREE)
+		
+		# 获取调试信息
+		var template = game_config.get_generator_template(game_config.GeneratorType.TREE)
+		var base_amount = template.generation.amount if template and template.generation.has("amount") else 0
+		var efficiency_multiplier = game_config.get_ability_effect_multiplier(
+			game_config.GeneratorType.TREE, "efficiency")
+		
+		print("从GameConfig加载树产生金币数量:", coin_generation_amount,
+			"(基础:", base_amount, "效率乘数:", efficiency_multiplier,
+			"旧值:", old_amount, ")")
+		
+		# 处理生成间隔
+		if template and template.generation.has("interval") and coin_timer:
+			var base_interval = template.generation.interval
+			var speed_multiplier = game_config.get_ability_effect_multiplier(
+				game_config.GeneratorType.TREE, "speed")
+			
+			var old_interval = coin_timer.wait_time
+			coin_timer.wait_time = base_interval / speed_multiplier
+			
+			print("从GameConfig加载树产生金币间隔:", coin_timer.wait_time,
+				"(基础:", base_interval, "速度乘数:", speed_multiplier,
+				"旧值:", old_interval, ")")
 	else:
 		print("GameConfig单例不可用，使用默认树配置")
 
@@ -45,10 +68,15 @@ func _process(delta):
 
 # 当金币计时器超时时产生金币
 func _on_coin_timer_timeout():
+	# 每次产生金币前重新计算奖励值
+	var game_config = get_node_or_null("/root/GameConfig")
+	if game_config:
+		coin_generation_amount = game_config.calculate_generator_reward(game_config.GeneratorType.TREE)
+	
 	# 在此处添加金币产生的逻辑
 	if Global:
 		Global.add_coins(coin_generation_amount)
-		print("树产生", coin_generation_amount, "金币，当前总金币: ", Global.get_coins())
+		print("树产生", coin_generation_amount, "金币，当前总金币: ", Global.get_coins(), "，配置的产出量:", coin_generation_amount)
 		
 		# 显示浮动文本
 		_show_floating_text("+" + str(coin_generation_amount))
