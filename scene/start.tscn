@@ -1,0 +1,68 @@
+[gd_scene load_steps=2 format=3 uid="uid://blt00juwdl4fr"]
+
+[ext_resource type="Script" path="res://scripts/start.gd" id="1_start"]
+
+[node name="StartScene" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_start")
+
+[node name="Background" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.490196, 0.658824, 0.439216, 1)
+
+[node name="StartButton" type="Button" parent="."]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -96.0
+offset_top = -4.0
+offset_right = 104.0
+offset_bottom = 56.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_colors/font_hover_color = Color(0, 0, 0, 1)
+theme_override_font_sizes/font_size = 24
+text = "开始游戏"
+
+[node name="TitleLabel" type="Label" parent="."]
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -200.0
+offset_top = 100.0
+offset_right = 200.0
+offset_bottom = 150.0
+grow_horizontal = 2
+theme_override_colors/font_color = Color(0.0784314, 0.305882, 0.0784314, 1)
+theme_override_font_sizes/font_size = 48
+text = "小森林"
+horizontal_alignment = 1
+
+[node name="SubtitleLabel" type="Label" parent="."]
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -237.0
+offset_top = 198.0
+offset_right = 263.0
+offset_bottom = 228.0
+grow_horizontal = 2
+theme_override_colors/font_color = Color(0.0784314, 0.305882, 0.0784314, 1)
+theme_override_font_sizes/font_size = 20
+text = "点击生成，创建你自己的小世界"
+horizontal_alignment = 1
