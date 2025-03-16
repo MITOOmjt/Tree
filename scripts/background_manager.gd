@@ -32,6 +32,13 @@ var popup_ui
 # 容器节点引用缓存
 var container_nodes = {}
 
+# 预加载树场景
+var tree_scene = preload("res://scene/direct_tree.tscn")
+# 预加载花场景
+var flower_scene = preload("res://scene/flower.tscn")
+# 预加载鸟场景
+var bird_scene = preload("res://scene/bird.tscn")
+
 func _ready():
 	print("背景管理器：加载的弹出UI路径 =", POPUP_UI_PATH)
 	
@@ -123,6 +130,26 @@ func _on_generator_selected(type):
 
 # 处理输入事件
 func _input(event):
+	# 如果按下F3键，打印调试信息
+	if event is InputEventKey and event.pressed and event.keycode == KEY_F3:
+		debug_print_abilities()
+		refresh_generators_config()
+		print("已刷新所有生成物配置")
+	
+	# 如果按下F4键，强制刷新所有花朵
+	if event is InputEventKey and event.pressed and event.keycode == KEY_F4:
+		print("尝试强制刷新所有花朵...")
+		var flowers_container = get_node_or_null("Flowers")
+		if flowers_container:
+			for flower in flowers_container.get_children():
+				if flower.has_method("_load_config"):
+					var old_reward = flower.hover_coin_reward
+					flower._load_config()
+					print("刷新花朵，奖励从", old_reward, "变为", flower.hover_coin_reward)
+		else:
+			print("没有找到Flowers容器节点")
+	
+	# 处理鼠标点击
 	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
 		# 如果事件已经被处理（例如被UI处理）则跳过
 		if get_viewport().is_input_handled():
@@ -141,26 +168,31 @@ func _input(event):
 		# 获取点击位置
 		var click_position = event.position
 		
-		# 根据生成物的放置类型处理放置逻辑
-		var game_config = get_node_or_null("/root/GameConfig")
-		if game_config:
-			var template = game_config.get_generator_template(current_generator)
-			if template:
-				if template.placement == "on_tree":
-					# 需要放在树上的生成物
-					_handle_on_tree_placement(click_position, current_generator)
-				else:
-					# 放在地面/背景的生成物
-					_handle_ground_placement(click_position, current_generator)
+		# 根据当前选择的生成器类型处理点击
+		_handle_click(click_position, current_generator)
+
+# 处理点击事件的通用函数
+func _handle_click(click_position, generator_type):
+	# 根据生成物的放置类型处理放置逻辑
+	var game_config = get_node_or_null("/root/GameConfig")
+	if game_config:
+		var template = game_config.get_generator_template(generator_type)
+		if template:
+			if template.placement == "on_tree":
+				# 需要放在树上的生成物
+				_handle_on_tree_placement(click_position, generator_type)
 			else:
-				print("错误：未找到生成物模板, 类型:", current_generator)
+				# 放在地面/背景的生成物
+				_handle_ground_placement(click_position, generator_type)
 		else:
-			# 回退到旧的处理方式
-			if current_generator == GeneratorType.BIRD:
-				_handle_bird_generation(click_position)
-			else:
-				# 处理普通生成（树和花）
-				_handle_normal_generation(click_position)
+			print("错误：未找到生成物模板, 类型:", generator_type)
+	else:
+		# 回退到旧的处理方式
+		if generator_type == GeneratorType.BIRD:
+			_handle_bird_generation(click_position)
+		else:
+			# 处理普通生成（树和花）
+			_handle_normal_generation(click_position)
 
 # 处理需要放在树上的生成物
 func _handle_on_tree_placement(click_position, generator_type):
@@ -211,10 +243,11 @@ func _handle_on_tree_placement(click_position, generator_type):
 				
 				# 扣除金币
 				Global.spend_coins(cost)
-				print("剩余金币: ", Global.get_coins())
 				
-				# 显示成功消息
-				MessageBus.get_instance().emit_signal("show_message", "成功在树上生成一个" + _get_generator_name(generator_type) + "！", 2)
+				# 通知UI更新
+				_on_generator_created(generator_type)
+				
+				print("剩余金币: ", Global.get_coins())
 			else:
 				print("错误：无法实例化场景")
 		else:
@@ -283,6 +316,9 @@ func _handle_ground_placement(click_position, generator_type):
 				var result = Global.spend_coins(cost)
 				print("【调试】扣除结果：", result, "，扣除后金币：", Global.get_coins())
 				
+				# 通知UI更新
+				_on_generator_created(generator_type)
+				
 				print("剩余金币: ", Global.get_coins())
 			else:
 				print("错误：无法实例化场景")
@@ -314,15 +350,15 @@ func _load_and_instantiate_generator(type):
 	match type:
 		GeneratorType.TREE:
 			if not scene_cache.has(type):
-				scene_cache[type] = load("res://scene/direct_tree.tscn")
+				scene_cache[type] = tree_scene
 			return scene_cache[type].instantiate()
 		GeneratorType.FLOWER:
 			if not scene_cache.has(type):
-				scene_cache[type] = load("res://scene/flower.tscn")
+				scene_cache[type] = flower_scene
 			return scene_cache[type].instantiate()
 		GeneratorType.BIRD:
 			if not scene_cache.has(type):
-				scene_cache[type] = load("res://scene/bird.tscn")
+				scene_cache[type] = bird_scene
 			return scene_cache[type].instantiate()
 	
 	print("错误：无法加载生成物场景，类型:", type)
@@ -386,6 +422,14 @@ func update_generator_cost(type):
 	# 如果UI存在，通知UI更新
 	if popup_ui:
 		popup_ui.update_ui_from_config()
+		
+# 成功创建生成物后更新UI
+func _on_generator_created(type):
+	# 生成物数量已在各自的处理函数中更新
+	
+	# 通知UI更新
+	if popup_ui:
+		popup_ui.update_ui_from_config()
 
 # 尝试从GameConfig加载配置
 func _try_load_config():
@@ -422,3 +466,97 @@ func _try_load_config():
 				print("已从GameConfig更新默认生成器类型: ", _get_generator_name(current_generator))
 	else:
 		print("GameConfig单例不可用，使用默认配置")
+
+# 刷新已有生成物的配置
+func refresh_generators_config():
+	print("刷新所有生成物配置...")
+	
+	# 更新树配置
+	var trees_container = get_node_or_null("Trees")
+	if trees_container:
+		for tree in trees_container.get_children():
+			if tree.has_method("_load_config"):
+				tree._load_config()
+	
+	# 更新花配置
+	var flowers_container = get_node_or_null("Flowers")
+	if flowers_container:
+		for flower in flowers_container.get_children():
+			if flower.has_method("_load_config"):
+				flower._load_config()
+	
+	# 更新鸟配置
+	var trees = get_tree().get_nodes_in_group("trees")
+	for tree in trees:
+		for bird in tree.get_children():
+			if bird.has_method("_load_config"):
+				bird._load_config()
+	
+	print("所有生成物配置已刷新")
+
+# 打印所有能力状态（便于调试）
+func debug_print_abilities():
+	var game_config = get_node_or_null("/root/GameConfig")
+	if not game_config:
+		print("错误: GameConfig不可用")
+		return
+		
+	print("=============== 能力系统调试信息 ===============")
+	
+	var generator_types = game_config.get_all_generator_types()
+	for type in generator_types:
+		var type_name = game_config.get_generator_name(type)
+		var abilities = game_config.get_generator_abilities(type)
+		
+		print(type_name, "能力状态:")
+		
+		for ability_name in abilities:
+			var ability = abilities[ability_name]
+			var level = ability.level
+			var max_level = ability.max_level
+			var effect_per_level = ability.effect_per_level
+			var effect_multiplier = game_config.get_ability_effect_multiplier(type, ability_name)
+			
+			print("- ", ability_name, ": 等级 ", level, "/", max_level, 
+				", 每级效果: ", effect_per_level * 100, "%", 
+				", 当前效果乘数: ", effect_multiplier)
+			
+			# 根据能力类型打印特定信息
+			match ability_name:
+				"efficiency":
+					var base_amount = game_config.get_generator_template(type).generation.amount
+					var boosted_amount = base_amount * effect_multiplier
+					print("  基础产出: ", base_amount, ", 提升后产出: ", boosted_amount)
+				"speed":
+					if game_config.get_generator_template(type).generation.has("interval"):
+						var base_interval = game_config.get_generator_template(type).generation.interval
+						var boosted_interval = base_interval / effect_multiplier
+						print("  基础间隔: ", base_interval, "秒, 提升后间隔: ", boosted_interval, "秒")
+				"cooldown":
+					if game_config.get_generator_template(type).generation.has("cooldown"):
+						var base_cooldown = game_config.get_generator_template(type).generation.cooldown
+						var boosted_cooldown = base_cooldown / effect_multiplier
+						print("  基础冷却: ", base_cooldown, "秒, 提升后冷却: ", boosted_cooldown, "秒")
+	
+	print("===============================================")
+	
+	# 查看实际生成的对象状态
+	print("当前场景中的生成物状态:")
+	
+	# 检查花朵
+	var flowers_container = get_node_or_null("Flowers")
+	if flowers_container:
+		var flowers = flowers_container.get_children()
+		print("场景中花朵数量: ", flowers.size())
+		for i in range(min(flowers.size(), 3)):  # 只打印前3个花朵信息
+			var flower = flowers[i]
+			print("花朵 #", i, ": 悬停奖励=", flower.hover_coin_reward, ", 冷却时间=", flower.hover_cooldown_time)
+	
+	# 检查树木
+	var trees_container = get_node_or_null("Trees")
+	if trees_container:
+		var trees = trees_container.get_children()
+		print("场景中树木数量: ", trees.size())
+		for i in range(min(trees.size(), 3)):  # 只打印前3个树木信息
+			var tree = trees[i]
+			print("树木 #", i, ": 产出量=", tree.coin_generation_amount, ", 间隔=", tree.coin_timer.wait_time if tree.coin_timer else "未知")

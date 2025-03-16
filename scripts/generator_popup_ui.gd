@@ -15,7 +15,7 @@ var manual_close = false  # 记录是否是手动关闭
 var allow_hide = false  # 控制是否允许面板隐藏
 
 # 按钮和标签引用字典
-var generator_ui_elements = {}  # {type: {button, cost_label, output_label}}
+var generator_ui_elements = {}  # {type: {button, cost_label, output_label, upgrade_button}}
 
 # 默认标签颜色
 var default_label_color = Color(0.807843, 0.807843, 0.807843, 1)
@@ -23,6 +23,8 @@ var insufficient_funds_color = Color(0.9, 0.2, 0.2, 1)
 
 # GameConfig引用
 var game_config
+# 升级UI引用
+var ability_upgrade_ui
 
 func _ready():
 	print("PopupUI脚本(_ready)：开始初始化...")
@@ -67,6 +69,16 @@ func _ready():
 	for child in generator_list.get_children():
 		child.queue_free()
 		
+	# 预加载升级UI
+	var ability_upgrade_scene = load("res://scene/ability_upgrade_ui.tscn")
+	if ability_upgrade_scene:
+		ability_upgrade_ui = ability_upgrade_scene.instantiate()
+		get_tree().get_root().add_child(ability_upgrade_ui)
+		ability_upgrade_ui.upgrade_completed.connect(_on_upgrade_completed)
+		print("已加载能力升级界面")
+	else:
+		print("错误: 无法加载能力升级界面")
+	
 	# 动态创建生成物UI项
 	_create_generator_ui_items(generator_list)
 	
@@ -120,78 +132,94 @@ func _ready():
 # 创建生成物UI项
 func _create_generator_ui_items(parent_container):
 	if not game_config:
-		print("错误：GameConfig不可用，无法创建生成物UI")
+		print("PopupUI: GameConfig不可用，无法创建生成物UI")
 		return
-		
-	# 获取所有生成物类型
+	
 	var generator_types = game_config.get_all_generator_types()
+	var background_manager = get_node_or_null("/root/Main/BackgroundManager")
 	
-	# 按照类型ID排序
-	generator_types.sort()
-	
-	# 为每种生成物类型创建UI项
 	for type in generator_types:
 		var template = game_config.get_generator_template(type)
-		if template:
-			# 创建生成物项容器
-			var item_container = HBoxContainer.new()
-			item_container.name = template.name + "Item"
-			item_container.add_theme_constant_override("separation", 15)
+		if not template:
+			continue
 			
-			# 创建颜色方块
-			var color_rect = ColorRect.new()
-			color_rect.color = template.color
-			color_rect.custom_minimum_size = Vector2(40, 40)
-			color_rect.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-			
-			# 创建文本信息容器
-			var text_container = VBoxContainer.new()
-			text_container.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-			
-			# 创建名称标签
-			var name_label = Label.new()
-			name_label.text = template.name
-			name_label.add_theme_font_size_override("font_size", 16)
-			
-			# 创建费用标签
-			var cost_label = Label.new()
-			cost_label.add_theme_font_size_override("font_size", 12)
-			cost_label.add_theme_color_override("font_color", default_label_color)
-			
-			# 创建产出标签
-			var output_label = Label.new()
-			output_label.add_theme_font_size_override("font_size", 12)
-			output_label.add_theme_color_override("font_color", default_label_color)
-			
-			# 创建选择按钮
-			var button = Button.new()
-			button.text = "选择"
-			button.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-			
-			# 连接按钮信号
-			var callable = Callable(self, "_on_generator_button_pressed").bind(type)
-			button.pressed.connect(callable)
-			
-			# 添加所有元素
-			text_container.add_child(name_label)
-			text_container.add_child(cost_label)
-			text_container.add_child(output_label)
-			
-			item_container.add_child(color_rect)
-			item_container.add_child(text_container)
-			item_container.add_child(button)
-			
-			# 添加到父容器
-			parent_container.add_child(item_container)
-			
-			# 保存引用
-			generator_ui_elements[type] = {
-				"button": button,
-				"cost_label": cost_label,
-				"output_label": output_label
-			}
-			
-			print("已创建", template.name, "的UI元素")
+		# 创建项容器
+		var item_container = HBoxContainer.new()
+		item_container.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		
+		# 创建颜色标识
+		var color_rect = ColorRect.new()
+		color_rect.size_flags_vertical = Control.SIZE_EXPAND_FILL
+		color_rect.custom_minimum_size = Vector2(5, 0)
+		color_rect.color = template.color
+		
+		# 创建文本容器
+		var text_container = VBoxContainer.new()
+		text_container.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		
+		# 创建名称标签
+		var name_label = Label.new()
+		name_label.text = template.name
+		name_label.add_theme_font_size_override("font_size", 16)
+		
+		# 创建费用标签
+		var cost_label = Label.new()
+		cost_label.add_theme_font_size_override("font_size", 12)
+		cost_label.add_theme_color_override("font_color", default_label_color)
+		
+		# 创建产出标签
+		var output_label = Label.new()
+		output_label.add_theme_font_size_override("font_size", 12)
+		output_label.add_theme_color_override("font_color", default_label_color)
+		
+		# 创建按钮容器
+		var button_container = VBoxContainer.new()
+		button_container.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+		
+		# 创建选择按钮
+		var button = Button.new()
+		button.text = "选择"
+		button.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+		
+		# 连接按钮信号
+		var callable = Callable(self, "_on_generator_button_pressed").bind(type)
+		button.pressed.connect(callable)
+		
+		# 创建升级按钮
+		var upgrade_button = Button.new()
+		upgrade_button.text = "升级"
+		upgrade_button.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+		upgrade_button.visible = false  # 初始设置为隐藏，等数量达到2个时才显示
+		
+		# 连接升级按钮信号
+		var upgrade_callable = Callable(self, "_on_upgrade_button_pressed").bind(type)
+		upgrade_button.pressed.connect(upgrade_callable)
+		
+		# 添加按钮到容器
+		button_container.add_child(button)
+		button_container.add_child(upgrade_button)
+		
+		# 添加所有元素
+		text_container.add_child(name_label)
+		text_container.add_child(cost_label)
+		text_container.add_child(output_label)
+		
+		item_container.add_child(color_rect)
+		item_container.add_child(text_container)
+		item_container.add_child(button_container)
+		
+		# 添加到父容器
+		parent_container.add_child(item_container)
+		
+		# 保存引用
+		generator_ui_elements[type] = {
+			"button": button,
+			"cost_label": cost_label,
+			"output_label": output_label,
+			"upgrade_button": upgrade_button
+		}
+		
+		print("已创建", template.name, "的UI元素")
 
 # 处理生成器按钮点击
 func _on_generator_button_pressed(type):
@@ -241,6 +269,10 @@ func _on_show_button_pressed():
 	print("PopupUI: 显示按钮被点击")
 	show_button.visible = false
 	$PopupPanel.popup()
+	
+	# 显示界面时更新UI
+	update_ui_from_config()
+	
 	print("PopupUI: 用户重新打开了界面")
 
 # 更新选择标签
@@ -276,51 +308,82 @@ func update_button_styles():
 		if current_generator == type:
 			button.text = "已选择"
 
-# 从GameConfig更新显示信息
+# 从配置更新UI
 func update_ui_from_config():
 	if not game_config:
 		return
 	
-	# 获取背景管理器引用，用于获取动态成本
-	var background_manager = get_node_or_null("/root/Main")
+	# 尝试不同的路径获取背景管理器	
+	var background_manager = get_node_or_null("/root/Main/BackgroundManager")
 	if not background_manager:
-		print("PopupUI: 无法获取背景管理器引用，将使用GameConfig中的基础成本")
-	
-	# 更新所有生成物的UI信息
+		background_manager = get_node_or_null("/root/BackgroundManager")
+	if not background_manager:
+		background_manager = get_parent()
+		if not background_manager.has_method("_load_and_instantiate_generator"):
+			background_manager = null
+			
+	if background_manager:
+		print("成功获取背景管理器引用，当前生成器数量:")
+		for type in background_manager.generator_counts:
+			print("- ", game_config.get_generator_name(type), ": ", background_manager.generator_counts[type])
+	else:
+		print("警告: 无法获取背景管理器引用，将使用默认配置")
+		
 	for type in generator_ui_elements:
+		var ui = generator_ui_elements[type]
 		var template = game_config.get_generator_template(type)
-		if template:
-			var ui_elements = generator_ui_elements[type]
+		var cost = background_manager.generator_costs[type] if background_manager else template.base_cost
+		
+		# 更新成本标签
+		ui.cost_label.text = "成本: " + str(cost) + " 金币"
+		
+		# 更新产出信息
+		var output_text = ""
+		var generation = template.generation
+		var generation_type = generation.type
+		
+		# 考虑能力的影响
+		var efficiency_multiplier = game_config.get_ability_effect_multiplier(type, "efficiency")
+		var amount = generation.amount * efficiency_multiplier
+		
+		match generation_type:
+			"interval":
+				var speed_multiplier = game_config.get_ability_effect_multiplier(type, "speed")
+				var interval = generation.interval / speed_multiplier  # 减少间隔时间
+				output_text = "每 " + str(interval) + " 秒产出 " + str(amount) + " 金币"
+			"hover":
+				var cooldown_multiplier = game_config.get_ability_effect_multiplier(type, "cooldown")
+				var cooldown = generation.cooldown / cooldown_multiplier  # 减少冷却时间
+				output_text = "悬停产出 " + str(amount) + " 金币，冷却 " + str(cooldown) + " 秒"
+			"click":
+				output_text = "点击获得 " + str(amount) + " 金币"
+			_:
+				output_text = "产出: 未知"
+		
+		# 添加已建造数量 - 确保背景管理器存在，并且generator_counts包含该类型
+		var count = 0
+		if background_manager and background_manager.generator_counts.has(type):
+			count = background_manager.generator_counts[type]
+		output_text += "\n已建造: " + str(count)
+		
+		ui.output_label.text = output_text
+		
+		# 检查金币是否足够
+		var current_coins = Global.get_coins()
+		if current_coins < cost:
+			ui.cost_label.add_theme_color_override("font_color", insufficient_funds_color)
+		else:
+			ui.cost_label.add_theme_color_override("font_color", default_label_color)
+		
+		# 更新升级按钮可见性 - 当生成物数量达到2个或以上时才显示
+		if count >= 2:
+			ui.upgrade_button.visible = true
+		else:
+			ui.upgrade_button.visible = false
 			
-			# 获取成本（从背景管理器或基础值）
-			var cost = background_manager.generator_costs[type] if background_manager else template.base_cost
-			
-			# 获取计数和生成信息
-			var count = background_manager.generator_counts[type] if background_manager else 0
-			var output_info = template.generation
-			
-			# 更新成本显示
-			ui_elements.cost_label.text = "花费: " + str(cost) + "金币"
-			
-			# 更新产出信息显示
-			var output_text = ""
-			match output_info.type:
-				"interval":
-					output_text = "产出: 每" + str(output_info.interval) + "秒 " + str(output_info.amount) + "金币"
-				"hover":
-					output_text = "产出: 悬停每" + str(output_info.cooldown) + "秒 " + str(output_info.amount) + "金币"
-				"click":
-					output_text = "产出: 点击获得" + str(output_info.amount) + "金币"
-				_:
-					output_text = "产出: 未知"
-					
-			output_text += "\n成本增长: x" + str(template.growth_factor)
-			output_text += "\n已建造: " + str(count)
-			
-			ui_elements.output_label.text = output_text
-	
-	# 更新标签颜色
-	update_cost_label_colors()
+	# 更新当前选择
+	update_selection_label()
+	update_button_styles()
 
 # 更新费用标签颜色
 func update_cost_label_colors():
@@ -328,29 +391,31 @@ func update_cost_label_colors():
 		return
 		
 	var current_coins = Global.get_coins()
-	var background_manager = get_node_or_null("/root/Main")
+	var background_manager = get_node_or_null("/root/Main/BackgroundManager")
 	if not background_manager:
 		return
 	
 	# 更新所有生成物的费用标签颜色
 	for type in generator_ui_elements:
-		var ui_elements = generator_ui_elements[type]
+		var ui = generator_ui_elements[type]
 		var cost = background_manager.generator_costs[type]
 		
 		# 如果金币不足，显示红色
 		if current_coins < cost:
-			ui_elements.cost_label.add_theme_color_override("font_color", insufficient_funds_color)
+			ui.cost_label.add_theme_color_override("font_color", insufficient_funds_color)
 		else:
-			ui_elements.cost_label.add_theme_color_override("font_color", default_label_color)
+			ui.cost_label.add_theme_color_override("font_color", default_label_color)
 
 # 处理金币变化事件
-func _on_coins_changed(amount):
-	update_cost_label_colors()
+func _on_coins_changed(new_amount):
+	# 仅当界面可见时才更新UI
+	if $PopupPanel.visible:
+		update_ui_from_config()
 
 # 每帧更新
 func _process(delta):
-	if visible and not manual_close:
-		update_ui_from_config()
+	# 移除实时更新UI的代码，改为在特定事件触发时更新
+	pass
 
 # 设置当前生成器
 func set_generator(type):
@@ -361,3 +426,29 @@ func set_generator(type):
 # 获取当前生成器
 func get_current_generator():
 	return current_generator
+
+# 处理升级按钮点击
+func _on_upgrade_button_pressed(type):
+	print("PopupUI: ", game_config.get_generator_name(type), "升级按钮被点击")
+	
+	# 检查升级UI是否可用
+	if ability_upgrade_ui:
+		# 关闭当前面板
+		$PopupPanel.hide()
+		# 显示升级界面
+		ability_upgrade_ui.show_for_generator(type)
+	else:
+		print("错误: 能力升级界面不可用")
+
+# 处理升级完成
+func _on_upgrade_completed():
+	print("升级完成，重新显示生成器界面")
+	# 重新显示当前面板
+	$PopupPanel.popup()
+	
+	# 更新产出信息
+	update_ui_from_config()
+
+# 公开方法，允许其他脚本在需要时刷新UI
+func refresh_ui():
+	update_ui_from_config()
