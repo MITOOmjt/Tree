@@ -34,6 +34,9 @@ func _ready():
 	# 获取当前金币数量
 	coins = Global.get_coins()
 	
+	# 尝试从GameConfig加载配置
+	_try_load_config()
+	
 	# 实例化并设置弹出式UI
 	setup_popup_ui()
 	
@@ -174,6 +177,9 @@ func _handle_normal_generation(click_position):
 		var cost = generator_costs[current_generator]
 		coins = Global.get_coins()  # 获取最新的金币数量
 		
+		print("【调试】当前选择的生成物：", _get_generator_name(current_generator), 
+			"，需要消耗金币：", cost, "，当前金币：", coins)
+		
 		if coins >= cost:
 			# 根据当前选择生成物体
 			if current_generator == GeneratorType.TREE:
@@ -182,8 +188,12 @@ func _handle_normal_generation(click_position):
 			elif current_generator == GeneratorType.FLOWER:
 				print("生成花朵! 花费 ", cost, " 金币")
 				spawn_flower(click_position)
+			
 			# 扣除金币
-			Global.spend_coins(cost)
+			print("【调试】扣除前金币：", Global.get_coins())
+			var result = Global.spend_coins(cost)
+			print("【调试】扣除结果：", result, "，扣除后金币：", Global.get_coins())
+			
 			print("剩余金币: ", Global.get_coins())
 		else:
 			print("金币不足! 需要 ", cost, " 金币，当前只有 ", coins, " 金币")
