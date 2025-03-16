@@ -42,16 +42,43 @@ func _ready():
 	var bird_item = HBoxContainer.new()
 	bird_item.name = "BirdItem"
 	
-	var bird_label = Label.new()
-	bird_label.text = "鸟："
-	bird_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	# 创建颜色方块
+	var bird_color_rect = ColorRect.new()
+	bird_color_rect.color = Color(0.87451, 0.443137, 0.14902, 1) # 鸟的橙色
+	bird_color_rect.custom_minimum_size = Vector2(40, 40)
+	bird_color_rect.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	
+	# 创建文本信息容器
+	var bird_text_container = VBoxContainer.new()
+	bird_text_container.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	
+	# 创建名称标签
+	var bird_name_label = Label.new()
+	bird_name_label.text = "鸟"
+	bird_name_label.add_theme_font_size_override("font_size", 16)
+	
+	# 创建费用标签
+	var bird_cost_label = Label.new()
+	bird_cost_label.text = "花费: 10金币"
+	bird_cost_label.add_theme_font_size_override("font_size", 12)
+	bird_cost_label.add_theme_color_override("font_color", Color(0.807843, 0.807843, 0.807843, 1))
+	
+	# 创建选择按钮
 	bird_button = Button.new()
 	bird_button.text = "选择"
-	bird_button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	bird_button.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	
-	bird_item.add_child(bird_label)
+	# 添加所有元素
+	bird_text_container.add_child(bird_name_label)
+	bird_text_container.add_child(bird_cost_label)
+	
+	bird_item.add_child(bird_color_rect)
+	bird_item.add_child(bird_text_container)
 	bird_item.add_child(bird_button)
+	
+	# 设置间距与树和花一致
+	bird_item.add_theme_constant_override("separation", 15)
+	
 	generator_list.add_child(bird_item)
 	
 	current_selection_label = popup.get_node("MarginContainer/VBoxContainer/CurrentSelectionLabel")
