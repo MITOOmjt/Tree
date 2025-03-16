@@ -2,6 +2,8 @@ extends Node2D
 
 # 点击鸟获得的金币奖励
 var coin_reward = 1
+# 预加载浮动文本场景
+var floating_text_scene = preload("res://scene/floating_text.tscn")
 
 func _ready():
 	# 使鸟可点击
@@ -23,12 +25,24 @@ func _input(event):
 			# 增加金币
 			Global.add_coins(coin_reward)
 			
+			# 显示浮动文本效果
+			spawn_floating_text(mouse_pos)
+			
 			# 显示消息
 			if has_node("/root/MessageBus"):
 				MessageBus.get_instance().emit_signal("show_message", "点击鸟获得" + str(coin_reward) + "金币！", 1)
 			
 			# 阻止事件传递
 			get_viewport().set_input_as_handled()
+
+# 生成浮动文本动画
+func spawn_floating_text(position):
+	var floating_text = floating_text_scene.instantiate()
+	floating_text.position = position
+	floating_text.text = "+" + str(coin_reward)
+	
+	# 添加到场景
+	get_tree().get_root().add_child(floating_text)
 
 # 检查点是否在鸟的三角形形状内
 func _is_point_in_bird_shape(global_point):
