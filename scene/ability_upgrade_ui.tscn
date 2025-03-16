@@ -1,0 +1,45 @@
+[gd_scene load_steps=2 format=3 uid="uid://bdmf5mvq4aqmq"]
+
+[ext_resource type="Script" path="res://scripts/ability_upgrade_ui.gd" id="1_4yjcv"]
+
+[node name="AbilityUpgradeUI" type="CanvasLayer"]
+script = ExtResource("1_4yjcv")
+
+[node name="UpgradePanel" type="PopupPanel" parent="."]
+title = "能力升级"
+size = Vector2i(500, 400)
+visible = false
+borderless = false
+
+[node name="MarginContainer" type="MarginContainer" parent="UpgradePanel"]
+offset_left = 4.0
+offset_top = 4.0
+offset_right = 496.0
+offset_bottom = 396.0
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 10
+theme_override_constants/margin_bottom = 10
+
+[node name="VBoxContainer" type="VBoxContainer" parent="UpgradePanel/MarginContainer"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="TitleLabel" type="Label" parent="UpgradePanel/MarginContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 24
+text = "生成物升级"
+horizontal_alignment = 1
+
+[node name="HSeparator" type="HSeparator" parent="UpgradePanel/MarginContainer/VBoxContainer"]
+layout_mode = 2
+
+[node name="AbilitiesContainer" type="VBoxContainer" parent="UpgradePanel/MarginContainer/VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 15
+
+[node name="CloseButton" type="Button" parent="UpgradePanel/MarginContainer/VBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 4
+text = "关闭" 
