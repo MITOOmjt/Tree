@@ -1,6 +1,6 @@
 extends Node2D
 
-# 点击鸟获得的金币奖励
+# 点击鸟获得的金币奖励（默认值）
 var coin_reward = 1
 # 预加载浮动文本场景
 var floating_text_scene = preload("res://scene/floating_text.tscn")
@@ -8,6 +8,22 @@ var floating_text_scene = preload("res://scene/floating_text.tscn")
 func _ready():
 	# 使鸟可点击
 	set_process_input(true)
+	
+	# 从GameConfig加载配置
+	_load_config()
+	
+	print("鸟已准备就绪，点击奖励:", coin_reward)
+
+# 从GameConfig加载配置
+func _load_config():
+	var game_config = get_node_or_null("/root/GameConfig")
+	if game_config:
+		var template = game_config.get_generator_template(game_config.GeneratorType.BIRD)
+		if template and template.generation.has("amount"):
+			coin_reward = template.generation.amount
+			print("从GameConfig加载鸟点击奖励:", coin_reward)
+	else:
+		print("GameConfig单例不可用，使用默认鸟点击配置")
 
 func _input(event):
 	# 只处理鼠标左键点击

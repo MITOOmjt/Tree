@@ -102,36 +102,113 @@ tree/
 游戏使用GameConfig单例来集中管理配置参数。这使得修改游戏平衡性和各种数值变得简单。
 
 ### 主要配置内容
-- **生成物费用**：在game_config.gd中的generator_costs字典中定义
+
+- **生成物模板系统**：在game_config.gd中使用generator_templates字典定义所有生成物
   ```gdscript
-  var generator_costs = {
-      GeneratorType.TREE: 5,   # 树木生成费用
-      GeneratorType.FLOWER: 1, # 花朵生成费用
-      GeneratorType.BIRD: 10   # 鸟类生成费用
+  # 生成物模板系统示例
+  var generator_templates = {
+    GeneratorType.TREE: {
+      "id": GeneratorType.TREE,
+      "name": "树木",
+      "scene_path": "res://scene/direct_tree.tscn",
+      "base_cost": 5,                 # 基础生成成本
+      "growth_factor": 1.5,           # 成本增长系数
+      "color": Color(0.145, 0.639, 0.121), # 显示颜色
+      "generation": {
+        "type": "interval",         # 产出类型: interval表示定时产出
+        "amount": 1,                # 产出金币数量
+        "interval": 5.0,            # 产出间隔(秒)
+      },
+      "placement": "ground",          # 放置类型: ground表示放置在地面/背景
+      "container_node": "Trees"       # 容器节点名称
+    },
+    // 其它生成物配置...
   }
   ```
 
-- **金币产出配置**：在game_config.gd中的coin_generation字典中定义
-  ```gdscript
-  var coin_generation = {
-      "tree_coin_generation": 1,  # 树每次产生金币数量
-      "tree_coin_interval": 5.0,  # 树产生金币的间隔时间(秒)
-      "bird_click_reward": 1,     # 点击鸟获得的金币奖励
-      "flower_hover_reward": 2,   # 鼠标悬停在花上获得的金币奖励
-      "flower_hover_cooldown": 1.5 # 花悬停奖励的冷却时间(秒)
-  }
-  ```
+- **金币产出配置**：根据生成物类型和产出方式定义在各个generator_template中
+  - 间隔产出(interval)：适用于定时产生金币的生成物，如树木
+  - 悬停产出(hover)：适用于鼠标悬停时产生金币的生成物，如花朵
+  - 点击产出(click)：适用于点击时产生金币的生成物，如鸟类
 
-- **初始配置**：在game_config.gd中的initial_config字典中定义
-  ```gdscript
-  var initial_config = {
-      "starting_coins": 5,       # 初始金币数量
-      "default_generator": GeneratorType.FLOWER  # 默认选择的生成物类型
-  }
-  ```
+- **费用增长系数**：每种生成物都有独立的成本增长系数，玩家每建造一个该类型的生成物，下一个相同类型的成本会增加
 
 ### 配置加载机制
 所有实体（树、花、鸟）都会在其_ready函数中调用_load_config()来从GameConfig单例加载配置。这确保了游戏数值的一致性和可配置性。
+
+## 扩展新的生成物类型
+
+游戏系统设计为可轻松扩展新的生成物类型。下面是添加新生成物的完整步骤：
+
+### 1. 在GameConfig中添加新的生成物类型
+
+首先，在scripts/game_config.gd中的GeneratorType枚举中添加新的类型：
+
+```gdscript
+enum GeneratorType {TREE = 0, FLOWER = 1, BIRD = 2, NEW_TYPE = 3}
+```
+
+### 2. 创建生成物场景
+
+创建新生成物的场景文件，并保存到scene目录下，例如scene/new_generator.tscn。
+确保该场景包含必要的脚本来处理其行为和金币生成逻辑。
+
+### 3. 在GameConfig中定义生成物模板
+
+在scripts/game_config.gd的generator_templates字典中添加新生成物的配置：
+
+```gdscript
+GeneratorType.NEW_TYPE: {
+  "id": GeneratorType.NEW_TYPE,
+  "name": "新生成物",                      # 显示名称
+  "scene_path": "res://scene/new_generator.tscn", # 场景路径
+  "base_cost": 15,                      # 基础生成成本
+  "growth_factor": 1.3,                 # 成本增长系数
+  "color": Color(0.2, 0.5, 0.8),        # UI显示颜色
+  "generation": {
+    "type": "interval",                 # 产出类型: interval/hover/click
+    "amount": 2,                        # 产出金币数量
+    "interval": 3.0,                    # 产出间隔(如适用)
+  },
+  "placement": "ground",                # 放置类型: ground/on_tree
+  "container_node": "NewGenerators"     # 容器节点名称
+}
+```
+
+### 4. 生成物脚本实现
+
+确保新生成物的脚本实现了_load_config()方法来从GameConfig加载配置：
+
+```gdscript
+# 从GameConfig加载配置
+func _load_config():
+  var game_config = get_node_or_null("/root/GameConfig")
+  if game_config:
+    var template = game_config.get_generator_template(game_config.GeneratorType.NEW_TYPE)
+    if template and template.generation.has("amount"):
+      coin_amount = template.generation.amount
+      print("从GameConfig加载金币产出量:", coin_amount)
+    if template.generation.has("interval"):
+      $CoinTimer.wait_time = template.generation.interval
+      print("从GameConfig加载产出间隔:", $CoinTimer.wait_time)
+  else:
+    print("GameConfig单例不可用，使用默认配置")
+```
+
+### 重要提示
+
+1. **放置类型**: 根据生成物放置位置选择合适的放置类型
+   - `ground`: 放置在地面/背景的生成物(如树木、花朵)
+   - `on_tree`: 放置在树上的生成物(如鸟类)
+
+2. **产出类型**: 根据生成物产生金币的方式选择合适的产出类型
+   - `interval`: 定时产出金币(如树木)
+   - `hover`: 鼠标悬停产出金币(如花朵)
+   - `click`: 点击产出金币(如鸟类)
+
+3. **容器节点**: 指定存放该类型生成物的容器节点名称，系统会自动创建这个节点
+
+添加完成后，UI系统会自动创建新生成物的选择按钮和信息显示，无需修改UI代码。背景管理器也会根据放置类型自动处理新生成物的创建和放置逻辑。
 
 ## 后续开发计划
 

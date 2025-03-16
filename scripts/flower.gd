@@ -13,16 +13,19 @@ var colors = [
 # 预加载浮动文本场景
 var floating_text_scene = preload("res://scene/floating_text.tscn")
 # 鼠标悬停获得金币的量（默认值，会尝试从GameConfig加载）
-var hover_coin_reward = 1
+var hover_coin_reward = 2  # 默认悬停金币奖励
 # 悬停冷却计时器
-var hover_cooldown = 0.0
+var hover_cooldown = 0  # 当前冷却计时
 # 悬停冷却时间（秒）（默认值，会尝试从GameConfig加载）
-var hover_cooldown_time = 1.5
+var hover_cooldown_time = 1.5  # 默认悬停冷却时间(秒)
 # 是否正在悬停
 var is_hovering = false
 # 碰撞检测半径
 var detection_radius = 25.0
+# 冷却可视节点
+var cooldown_visual = null
 
+# Called when the node enters the scene tree for the first time.
 func _ready():
 	# 随机选择一种颜色
 	var random_color = colors[randi() % colors.size()]
@@ -32,63 +35,80 @@ func _ready():
 	set_process(true)
 	set_process_input(true)
 	
+	# 创建冷却可视节点（如果不存在）
+	if not has_node("CooldownVisual"):
+		cooldown_visual = ColorRect.new()
+		cooldown_visual.name = "CooldownVisual"
+		cooldown_visual.color = Color(0.2, 0.2, 0.2, 0.5)  # 半透明灰色
+		cooldown_visual.size = Vector2(30, 30)
+		cooldown_visual.position = Vector2(-15, -15)  # 居中
+		cooldown_visual.visible = false
+		add_child(cooldown_visual)
+	else:
+		cooldown_visual = $CooldownVisual
+	
+	# 确保区域检测正常
+	if has_node("Area2D"):
+		$Area2D.connect("mouse_entered", Callable(self, "_on_area_2d_mouse_entered"))
+		$Area2D.connect("mouse_exited", Callable(self, "_on_area_2d_mouse_exited"))
+		print("为Area2D连接了鼠标信号")
+	
 	# 尝试从GameConfig加载配置
 	_load_config()
 	
-	print("花的脚本初始化完成，冷却时间:", hover_cooldown_time, "检测半径:", detection_radius, "悬停奖励:", hover_coin_reward)
+	print("花已准备就绪，悬停奖励:", hover_coin_reward, "，冷却时间:", hover_cooldown_time, "秒")
 
-# 从GameConfig加载配置
-func _load_config():
-	var game_config = get_node_or_null("/root/GameConfig")
-	if game_config:
-		# 加载悬停奖励金币数量
-		if game_config.coin_generation.has("flower_hover_reward"):
-			hover_coin_reward = game_config.coin_generation.flower_hover_reward
-			print("从GameConfig加载花朵悬停奖励:", hover_coin_reward)
-		
-		# 加载悬停冷却时间
-		if game_config.coin_generation.has("flower_hover_cooldown"):
-			hover_cooldown_time = game_config.coin_generation.flower_hover_cooldown
-			print("从GameConfig加载花朵悬停冷却时间:", hover_cooldown_time)
-	else:
-		print("GameConfig单例不可用，使用默认配置")
-
+# Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(delta):
-	# 处理悬停冷却
+	# 计算冷却时间
 	if hover_cooldown > 0:
 		hover_cooldown -= delta
+		
+		# 更新可视化冷却指示器
+		if cooldown_visual:
+			cooldown_visual.visible = hover_cooldown > 0
+			var scale_factor = hover_cooldown / hover_cooldown_time
+			cooldown_visual.scale = Vector2(scale_factor, scale_factor)
 	
-	# 检查鼠标位置是否在花朵上方
+	# 检查鼠标是否悬停在花朵上
 	_check_mouse_hover()
 	
 	# 如果正在悬停且冷却结束，给予金币奖励
 	if is_hovering and hover_cooldown <= 0:
 		_give_hover_reward()
 		hover_cooldown = hover_cooldown_time
-		print("花给予金币奖励，剩余冷却:", hover_cooldown)
+		print("花朵悬停奖励触发，设置冷却时间:", hover_cooldown_time)
+
+# 处理鼠标输入
+func _input(event):
+	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
+		# 获取鼠标位置
+		var mouse_pos = get_global_mouse_position()
+		
+		# 检查点击是否在花朵范围内
+		var distance = global_position.distance_to(mouse_pos)
+		if distance <= detection_radius:
+			# 点击花朵时增加金币
+			Global.add_coins(1)
+			print("点击花朵，增加1金币")
+			
+			# 显示浮动文本
+			var floating_text = floating_text_scene.instantiate()
+			floating_text.position = mouse_pos
+			floating_text.text = "+1"
+			get_tree().get_root().add_child(floating_text)
 
 # 检查鼠标是否悬停在花朵上
 func _check_mouse_hover():
-	# 安全获取鼠标位置
-	var viewport = get_viewport()
-	if viewport == null:
-		return
+	# 获取鼠标位置
+	var mouse_pos = get_global_mouse_position()
 	
-	var mouse_pos = viewport.get_mouse_position()
-	if mouse_pos == null or global_position == null:
-		return
+	# 计算距离
+	var distance = global_position.distance_to(mouse_pos)
 	
-	# 计算距离前确保值不为空
-	var distance = 9999.0  # 默认一个很大的距离
-	if typeof(global_position) != TYPE_NIL and typeof(mouse_pos) != TYPE_NIL:
-		distance = global_position.distance_to(mouse_pos)
-	
+	# 更新悬停状态
 	var was_hovering = is_hovering
-	# 确保所有值都不为空再进行比较
-	if typeof(distance) != TYPE_NIL and typeof(detection_radius) != TYPE_NIL:
-		is_hovering = distance <= detection_radius
-	else:
-		is_hovering = false
+	is_hovering = distance <= detection_radius
 	
 	# 状态变化时执行相应操作
 	if is_hovering and not was_hovering:
@@ -100,7 +120,7 @@ func _check_mouse_hover():
 func _give_hover_reward():
 	# 增加金币
 	Global.add_coins(hover_coin_reward)
-	print("花增加金币:", hover_coin_reward, "当前总金币:", Global.get_coins())
+	print("花产生", hover_coin_reward, "金币！当前总金币:", Global.get_coins())
 	
 	# 在花的位置显示浮动文本
 	var floating_text = floating_text_scene.instantiate()
@@ -117,18 +137,6 @@ func _give_hover_reward():
 	if has_node("/root/MessageBus"):
 		MessageBus.get_instance().emit_signal("show_message", "鼠标悬停在花上获得" + str(hover_coin_reward) + "金币！", 1)
 
-func _on_area_2d_input_event(_viewport, event, _shape_idx):
-	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
-		# 点击花朵时增加金币
-		Global.add_coins(1)
-		print("点击花朵，增加1金币")
-		
-		# 显示浮动文本
-		var floating_text = floating_text_scene.instantiate()
-		floating_text.position = get_global_mouse_position()
-		floating_text.text = "+1"
-		get_tree().get_root().add_child(floating_text)
-
 # 鼠标进入花朵区域
 func _on_mouse_entered():
 	# 鼠标形状变为手形
@@ -143,7 +151,23 @@ func _on_mouse_exited():
 
 # 保留原来的信号回调，但重定向到新的函数
 func _on_area_2d_mouse_entered():
+	print("收到Area2D鼠标进入信号")
 	_on_mouse_entered()
 
 func _on_area_2d_mouse_exited():
-	_on_mouse_exited() 
+	print("收到Area2D鼠标离开信号")
+	_on_mouse_exited()
+
+# 从GameConfig加载配置
+func _load_config():
+	var game_config = get_node_or_null("/root/GameConfig")
+	if game_config:
+		var template = game_config.get_generator_template(game_config.GeneratorType.FLOWER)
+		if template and template.generation.has("amount"):
+			hover_coin_reward = template.generation.amount
+			print("从GameConfig加载花悬停金币奖励:", hover_coin_reward)
+		if template.generation.has("cooldown"):
+			hover_cooldown_time = template.generation.cooldown
+			print("从GameConfig加载花悬停冷却时间:", hover_cooldown_time)
+	else:
+		print("GameConfig单例不可用，使用默认花悬停配置") 

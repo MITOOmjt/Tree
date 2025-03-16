@@ -131,6 +131,24 @@ AI助手在帮助用户编写或修改代码时，应主动检查：
 
 11. **金币系统的修改和配置**：
    - 金币消耗和获取应通过GameConfig中定义的配置进行管理
-   - 修改生成物费用时，应修改game_config.gd中的generator_costs字典
-   - 修改金币产出时，应修改game_config.gd中的coin_generation字典
-   - 提示信息例子：「要修改树的生成费用，请更新GameConfig.generator_costs[GeneratorType.TREE]的值」
+   - 修改生成物费用时，应修改game_config.gd中的generator_templates字典
+   - 修改金币产出时，应修改game_config.gd中的generation字典中的相应值
+   - 提示信息例子：「要修改树的生成费用，请更新GameConfig.get_generator_template(GeneratorType.TREE).base_cost的值」
+
+## 项目技术规范
+
+### GDScript
+
+### 游戏配置管理
+
+- 游戏配置通过单例`GameConfig`集中管理，避免在各个脚本中硬编码参数值
+- 添加新实体时，应在GameConfig.generator_templates中添加对应的模板配置
+- 修改生成物费用时，应修改对应模板的base_cost和growth_factor值
+- 提示信息例子：「要修改树的生成费用，请更新GameConfig.get_generator_template(GeneratorType.TREE).base_cost的值」
+- 修改金币产出时，应修改对应模板的generation字典中的相应值
+
+### 金币系统规则
+
+- 所有涉及金币获取或消耗的实体必须通过调用`Global.add_coins()`或`Global.remove_coins()`来修改金币数量
+- 所有实体必须在_ready()函数中调用_load_config()来从GameConfig加载配置参数
+- 调试金币变化时应使用print语句打印相关信息，例如："树产生X金币，当前总金币：Y"
