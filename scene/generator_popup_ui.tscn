@@ -1,6 +1,6 @@
 [gd_scene load_steps=2 format=3 uid="uid://cdrxtmyx0qhch"]
 
-[ext_resource type="Script" path="res://scripts/generator_popup_ui.gd" id="1_g4moj"]
+[ext_resource type="Script" uid="uid://gl3lclg0dskw" path="res://scripts/generator_popup_ui.gd" id="1_g4moj"]
 
 [node name="GeneratorPopupUI" type="CanvasLayer"]
 script = ExtResource("1_g4moj")
@@ -111,4 +111,4 @@ layout_mode = 2
 theme_override_font_sizes/font_size = 16
 text = "当前选择：花"
 horizontal_alignment = 1
-vertical_alignment = 1 
+vertical_alignment = 1
