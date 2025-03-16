@@ -200,7 +200,10 @@ func _load_config():
 				game_config.GeneratorType.FLOWER, "cooldown")
 			
 			var old_cooldown = hover_cooldown_time
-			hover_cooldown_time = base_cooldown / cooldown_multiplier
+			# 计算新冷却时间并四舍五入到1位小数
+			var new_cooldown = base_cooldown / cooldown_multiplier
+			var rounded_cooldown = snapped(new_cooldown, 0.1)  # 四舍五入到0.1
+			hover_cooldown_time = rounded_cooldown
 			
 			print("从GameConfig加载花悬停冷却时间:", hover_cooldown_time,
 				"(基础:", base_cooldown, "冷却乘数:", cooldown_multiplier,

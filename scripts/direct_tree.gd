@@ -54,7 +54,10 @@ func _load_config():
 				game_config.GeneratorType.TREE, "speed")
 			
 			var old_interval = coin_timer.wait_time
-			coin_timer.wait_time = base_interval / speed_multiplier
+			# 计算新间隔时间并四舍五入到1位小数
+			var new_interval = base_interval / speed_multiplier
+			var rounded_interval = snapped(new_interval, 0.1)  # 四舍五入到0.1
+			coin_timer.wait_time = rounded_interval
 			
 			print("从GameConfig加载树产生金币间隔:", coin_timer.wait_time,
 				"(基础:", base_interval, "速度乘数:", speed_multiplier,

@@ -350,11 +350,15 @@ func update_ui_from_config():
 			"interval":
 				var speed_multiplier = game_config.get_ability_effect_multiplier(type, "speed")
 				var interval = generation.interval / speed_multiplier  # 减少间隔时间
-				output_text = "每 " + str(interval) + " 秒产出 " + str(amount) + " 金币"
+				# 格式化为只保留一位小数
+				var formatted_interval = "%.1f" % interval
+				output_text = "每 " + formatted_interval + " 秒产出 " + str(amount) + " 金币"
 			"hover":
 				var cooldown_multiplier = game_config.get_ability_effect_multiplier(type, "cooldown")
 				var cooldown = generation.cooldown / cooldown_multiplier  # 减少冷却时间
-				output_text = "悬停产出 " + str(amount) + " 金币，冷却 " + str(cooldown) + " 秒"
+				# 格式化为只保留一位小数
+				var formatted_cooldown = "%.1f" % cooldown
+				output_text = "悬停产出 " + str(amount) + " 金币，冷却 " + formatted_cooldown + " 秒"
 			"click":
 				output_text = "点击获得 " + str(amount) + " 金币"
 			_:
