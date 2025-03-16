@@ -120,7 +120,17 @@ tree/
         "interval": 5.0,            # 产出间隔(秒)
       },
       "placement": "ground",          # 放置类型: ground表示放置在地面/背景
-      "container_node": "Trees"       # 容器节点名称
+      "container_node": "Trees",       # 容器节点名称
+      "abilities": {                   # 能力系统
+        "efficiency": {                # 效率能力 - 增加金币产出
+          "level": 1,                  # 当前等级
+          "base_cost": 10,             # 升级基础成本
+          "growth_factor": 1.5,        # 升级成本增长系数
+          "effect_per_level": 0.2,     # 每级增加20%产出
+          "max_level": 10              # 最大等级
+        },
+        // 其它能力...
+      }
     },
     // 其它生成物配置...
   }
@@ -135,6 +145,53 @@ tree/
 
 ### 配置加载机制
 所有实体（树、花、鸟）都会在其_ready函数中调用_load_config()来从GameConfig单例加载配置。这确保了游戏数值的一致性和可配置性。
+
+### 能力系统机制
+
+游戏中的每种生成物都有可升级的能力，通过能力系统来增强其产出效率和性能：
+
+#### 能力类型
+- **效率(efficiency)**：增加金币产出量
+- **速度(speed)**：减少产出间隔时间（仅适用于间隔产出类型）
+- **冷却(cooldown)**：减少冷却时间（仅适用于悬停产出类型）
+
+#### 能力配置
+每个能力都有以下属性：
+```gdscript
+"efficiency": {
+  "level": 1,                # 当前等级
+  "base_cost": 10,           # 升级基础成本
+  "growth_factor": 1.5,      # 升级成本增长系数
+  "effect_per_level": 0.2,   # 每级效果（20%）
+  "max_level": 10            # 最大等级
+}
+```
+
+#### 效果计算机制
+1. **效果乘数计算公式**：`1 + (level - 1) * effect_per_level`
+   - 例如：效率能力2级（effect_per_level为0.2）的效果乘数为 1 + (2 - 1) * 0.2 = 1.2
+
+2. **动态更新机制**
+   - 所有生成物在每次触发产出奖励前会实时重新计算最新的效果值
+   - GameConfig提供了通用方法`calculate_generator_reward(generator_type)`用于计算任何生成器的当前奖励值
+   - 这确保了能力升级后，效果能立即应用，不需要等待刷新或重建对象
+
+3. **实现方式**
+   ```gdscript
+   # 从GameConfig获取当前奖励值（示例）
+   func _give_reward():
+     var game_config = get_node_or_null("/root/GameConfig")
+     if game_config:
+       reward_amount = game_config.calculate_generator_reward(game_config.GeneratorType.FLOWER)
+     
+     # 使用计算出的奖励值
+     Global.add_coins(reward_amount)
+   ```
+
+#### 升级能力
+通过ability_upgrade_ui界面可以升级各种生成物的能力，升级后的效果会立即应用到所有同类型的生成物上。
+
+升级能力后，系统会调用`background_manager.refresh_generators_config()`函数来刷新所有生成物的配置，但由于动态计算机制的存在，即使不刷新，下一次触发产出时也会使用最新的能力效果值。
 
 ## 扩展新的生成物类型
 

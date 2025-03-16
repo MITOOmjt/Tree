@@ -135,6 +135,28 @@ AI助手在帮助用户编写或修改代码时，应主动检查：
    - 修改金币产出时，应修改game_config.gd中的generation字典中的相应值
    - 提示信息例子：「要修改树的生成费用，请更新GameConfig.get_generator_template(GeneratorType.TREE).base_cost的值」
 
+12. **能力系统实现规范**：
+   - 所有生成物脚本必须在每次触发奖励前重新计算最新的效果值
+   - 使用GameConfig提供的通用方法calculate_generator_reward来获取当前奖励值
+   - 不要在生成物脚本中缓存能力效果值，应在每次需要时实时计算
+   - 提示信息例子：「在_give_hover_reward函数中应调用game_config.calculate_generator_reward()获取最新奖励值」
+
+13. **能力升级处理**：
+   - 升级能力后必须调用background_manager.refresh_generators_config()刷新所有生成物的配置
+   - 但所有生成物仍需在其产出奖励函数中实时重新计算效果值，以防止刷新失败
+   - 提示信息例子：「升级能力后，确保触发refresh_generators_config()并且所有产出函数都重新计算奖励值」
+   
+14. **新增能力类型规范**：
+   - 新增能力类型应在GameConfig的generator_templates对应生成物的abilities字典中定义
+   - 每个能力必须包含level、base_cost、growth_factor、effect_per_level和max_level字段
+   - 新增能力类型的效果计算必须遵循标准公式：1 + (level - 1) * effect_per_level
+   - 提示信息例子：「新增"range"能力应在generator_templates中遵循现有能力的定义格式，并确保效果计算一致」
+
+15. **效果计算调试**：
+   - 修改能力相关代码时，应添加足够的调试输出，包括基础值、效果乘数和最终计算结果
+   - 提供明确的日志信息，包括能力名称、当前等级、调整前后的值等
+   - 提示信息例子：「添加调试输出，打印"从GameConfig加载花效率乘数:{multiplier}，基础值:{base}，最终奖励:{reward}"」
+
 ## 项目技术规范
 
 ### GDScript
