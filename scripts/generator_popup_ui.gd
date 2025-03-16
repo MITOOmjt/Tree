@@ -60,6 +60,11 @@ func _ready():
 		print("PopupUI: 错误 - 找不到PopupPanel节点")
 		return
 	
+	# 连接PopupPanel的信号
+	popup.popup_hide.connect(_on_popup_hide)
+	popup.close_requested.connect(_on_popup_close_requested)
+	print("PopupUI: 已连接PopupPanel信号")
+	
 	# 获取按钮引用
 	tree_button = popup.get_node("MarginContainer/VBoxContainer/GeneratorList/TreeItem/TreeButton")
 	flower_button = popup.get_node("MarginContainer/VBoxContainer/GeneratorList/FlowerItem/FlowerButton")
@@ -179,9 +184,6 @@ func _ready():
 	
 	# 设置PopupPanel位置（右侧）
 	popup.position = Vector2(get_viewport().size.x - popup.size.x - 20, 250)
-	
-	# 连接关闭请求信号
-	popup.popup_hide.connect(_on_popup_hide)
 	
 	# 显示PopupPanel
 	popup.popup()
@@ -363,3 +365,11 @@ func _on_coins_changed(amount):
 func _process(delta):
 	if visible and not manual_close:
 		update_ui_from_config()
+
+# 处理右上角X按钮关闭请求
+func _on_popup_close_requested():
+	print("PopupUI: 右上角X按钮被点击")
+	manual_close = true
+	allow_hide = true  # 允许面板隐藏
+	$PopupPanel.hide()
+	print("PopupUI: 用户通过右上角X按钮关闭了界面")
