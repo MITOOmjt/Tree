@@ -3,7 +3,7 @@
 [ext_resource type="Script" uid="uid://cmqxpfn1hrepe" path="res://scripts/flower.gd" id="1_5kpdv"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_g7ner"]
-radius = 25.0
+radius = 15.0
 
 [node name="Flower" type="Node2D"]
 script = ExtResource("1_5kpdv")
@@ -18,12 +18,8 @@ color = Color(0.121569, 0.788235, 0.133333, 1)
 polygon = PackedVector2Array(-2, -5, 2, -5, 2, 10, -2, 10)
 
 [node name="Area2D" type="Area2D" parent="."]
-monitoring = true
-monitorable = true
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Area2D"]
 shape = SubResource("CircleShape2D_g7ner")
 
 [connection signal="input_event" from="Area2D" to="." method="_on_area_2d_input_event"]
-[connection signal="mouse_entered" from="Area2D" to="." method="_on_area_2d_mouse_entered"]
-[connection signal="mouse_exited" from="Area2D" to="." method="_on_area_2d_mouse_exited"]

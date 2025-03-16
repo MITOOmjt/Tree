@@ -21,11 +21,6 @@ Global="*res://scripts/global.gd"
 MessageBus="*res://scripts/message_bus.gd"
 GameManager="*res://scripts/game_manager.gd"
 
-[display]
-
-window/stretch/mode="viewport"
-window/stretch/aspect="ignore"
-
 [rendering]
 
 renderer/rendering_method="mobile"
