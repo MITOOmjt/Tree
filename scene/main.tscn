@@ -16,7 +16,7 @@ visible = false
 [node name="Trees" type="Node2D" parent="."]
 
 [node name="DirectTree5" parent="Trees" instance=ExtResource("1_tree")]
-position = Vector2(650, 450)
+position = Vector2(565, 334)
 scale = Vector2(1.1, 1.1)
 
 [node name="Camera2D" type="Camera2D" parent="."]

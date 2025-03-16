@@ -8,9 +8,7 @@ script = ExtResource("1_g4moj")
 [node name="PopupPanel" type="PopupPanel" parent="."]
 size = Vector2i(300, 250)
 visible = true
-exclusive = false
 borderless = false
-unfocusable = false
 always_on_top = true
 popup_window = false
 
