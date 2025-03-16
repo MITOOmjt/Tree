@@ -214,3 +214,39 @@ func spawn_tree(position):
 		add_child(trees_node)
 	
 	get_node("Trees").add_child(tree) 
+
+# 尝试从GameConfig加载配置
+func _try_load_config():
+	# 这里我们可以在项目正式加载GameConfig单例后更新此处
+	print("检查游戏配置...")
+	
+	# 通过调用get_node尝试获取自动加载的GameConfig
+	var game_config = get_node_or_null("/root/GameConfig")
+	if game_config:
+		print("成功找到GameConfig单例")
+		
+		# 将GameConfig中的生成器枚举映射到本地枚举
+		var config_to_local_enum = {
+			game_config.GeneratorType.TREE: GeneratorType.TREE,
+			game_config.GeneratorType.FLOWER: GeneratorType.FLOWER,
+			game_config.GeneratorType.BIRD: GeneratorType.BIRD
+		}
+		
+		# 加载生成费用
+		for config_type in config_to_local_enum:
+			var local_type = config_to_local_enum[config_type]
+			var cost = game_config.get_generator_cost(config_type)
+			generator_costs[local_type] = cost
+		
+		print("已从GameConfig更新生成费用配置:")
+		for type in generator_costs:
+			print("- ", _get_generator_name(type), ": ", generator_costs[type], " 金币")
+		
+		# 尝试更新默认生成器
+		if game_config.initial_config.has("default_generator"):
+			var default_type = game_config.initial_config.default_generator
+			if config_to_local_enum.has(default_type):
+				current_generator = config_to_local_enum[default_type]
+				print("已从GameConfig更新默认生成器类型: ", _get_generator_name(current_generator))
+	else:
+		print("GameConfig单例不可用，使用默认配置")
