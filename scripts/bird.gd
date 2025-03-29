@@ -1,5 +1,8 @@
 extends Node2D
 
+# 确保Logger单例在编译时可见
+@onready var _logger = get_node("/root/Logger")
+
 # 点击鸟获得的金币奖励（默认值）
 var coin_reward = 1
 # 预加载浮动文本场景
@@ -12,13 +15,13 @@ func _ready():
 	# 从GameConfig加载配置
 	_load_config()
 	
-	print("鸟已准备就绪，点击奖励:", coin_reward)
+	_logger.info("鸟已准备就绪，点击奖励: %s" % [coin_reward])
 
 # 从GameConfig加载配置
 func _load_config():
 	var game_config = get_node_or_null("/root/GameConfig")
 	if game_config:
-		print("鸟执行_load_config()...")
+		_logger.debug("鸟执行_load_config()...")
 		
 		# 使用通用方法计算奖励值
 		var old_reward = coin_reward
@@ -30,11 +33,14 @@ func _load_config():
 		var efficiency_multiplier = game_config.get_ability_effect_multiplier(
 			game_config.GeneratorType.BIRD, "efficiency")
 		
-		print("从GameConfig加载鸟点击金币奖励:", coin_reward,
-			"(基础:", base_amount, "效率乘数:", efficiency_multiplier,
-			"旧值:", old_reward, ")")
+		_logger.debug("从GameConfig加载鸟点击金币奖励: %s (基础: %s, 效率乘数: %s, 旧值: %s)" % [
+			coin_reward,
+			base_amount,
+			efficiency_multiplier,
+			old_reward
+		])
 	else:
-		print("GameConfig单例不可用，使用默认鸟点击配置")
+		_logger.warning("GameConfig单例不可用，使用默认鸟点击配置")
 
 func _input(event):
 	# 只处理鼠标左键点击
@@ -52,7 +58,7 @@ func _input(event):
 			if game_config:
 				coin_reward = game_config.calculate_generator_reward(game_config.GeneratorType.BIRD)
 			
-			print("点击了鸟，获得", coin_reward, "金币，配置的奖励值:", coin_reward)
+			_logger.info("点击了鸟，获得 %s 金币" % [coin_reward])
 			
 			# 增加金币
 			Global.add_coins(coin_reward)

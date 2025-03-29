@@ -8,6 +8,27 @@ var current_generator_type = null
 var game_config = null
 var ability_ui_elements = {}  # 存储能力UI元素的引用
 
+# 确保Logger单例在编译时可见
+@onready var _logger = get_node("/root/Logger")
+
+# 配置
+var title_font_size = 20
+var subtitle_font_size = 14
+var normal_font_size = 14
+
+# 当前选择的能力名称
+var current_ability_name = null
+
+# 生成器名称
+var generator_names = {}
+
+# 能力名称
+var ability_display_names = {
+	"efficiency": "效率",
+	"speed": "速度",
+	"cooldown": "冷却"
+}
+
 # 初始化
 func _ready():
 	# 获取GameConfig引用
@@ -146,33 +167,41 @@ func _on_upgrade_button_pressed(ability_name):
 	# 计算升级成本
 	var upgrade_cost = game_config.calculate_ability_upgrade_cost(current_generator_type, ability_name)
 	if upgrade_cost < 0:
-		print("能力已达最大等级")
+		_logger.warning("能力已达最大等级")
 		return
 	
 	# 检查金币是否足够
 	var current_coins = Global.get_coins()
 	if current_coins < upgrade_cost:
-		print("金币不足! 需要", upgrade_cost, "金币，当前只有", current_coins, "金币")
+		_logger.warning("金币不足! 需要 %d 金币，当前只有 %d 金币" % [upgrade_cost, current_coins])
 		return
 	
 	# 获取升级前的效果乘数
 	var pre_upgrade_multiplier = game_config.get_ability_effect_multiplier(current_generator_type, ability_name)
-	print("升级前", game_config.get_generator_name(current_generator_type), "的", ability_name, "效果乘数:", pre_upgrade_multiplier)
+	_logger.debug("升级前 %s 的 %s 效果乘数: %s" % [
+		game_config.get_generator_name(current_generator_type),
+		ability_name,
+		pre_upgrade_multiplier
+	])
 	
 	# 扣除金币
 	var success = Global.spend_coins(upgrade_cost)
 	if not success:
-		print("扣除金币失败")
+		_logger.error("扣除金币失败")
 		return
 	
 	# 升级能力
 	var upgraded = game_config.upgrade_ability(current_generator_type, ability_name)
 	if upgraded:
-		print("成功升级", _get_ability_display_name(ability_name), "能力")
+		_logger.info("成功升级 %s 能力" % [_get_ability_display_name(ability_name)])
 		
 		# 获取升级后的效果乘数
 		var post_upgrade_multiplier = game_config.get_ability_effect_multiplier(current_generator_type, ability_name)
-		print("升级后", game_config.get_generator_name(current_generator_type), "的", ability_name, "效果乘数:", post_upgrade_multiplier)
+		_logger.debug("升级后 %s 的 %s 效果乘数: %s" % [
+			game_config.get_generator_name(current_generator_type),
+			ability_name,
+			post_upgrade_multiplier
+		])
 		
 		# 更新UI
 		_update_ability_ui(ability_name)
@@ -183,15 +212,15 @@ func _on_upgrade_button_pressed(ability_name):
 		# 刷新所有生成物的配置
 		var background_manager = get_node_or_null("/root/Main/BackgroundManager")
 		if background_manager and background_manager.has_method("refresh_generators_config"):
-			print("调用刷新配置函数: refresh_generators_config()")
+			_logger.debug("调用刷新配置函数: refresh_generators_config()")
 			background_manager.refresh_generators_config()
 			
 			# 额外的调试 - 打印升级后的状态
 			if background_manager.has_method("debug_print_abilities"):
-				print("调用调试函数: debug_print_abilities()")
+				_logger.debug("调用调试函数: debug_print_abilities()")
 				background_manager.debug_print_abilities()
 		else:
-			print("警告: 无法找到BackgroundManager或refresh_generators_config方法")
+			_logger.warning("无法找到BackgroundManager或refresh_generators_config方法")
 		
 		# 发送通知信号
 		if has_node("/root/MessageBus"):

@@ -21,6 +21,7 @@ Global="*res://scripts/global.gd"
 MessageBus="*res://scripts/message_bus.gd"
 GameManager="*res://scripts/game_manager.gd"
 GameConfig="*res://scripts/game_config.gd"
+Logger="*res://scripts/logger.gd"
 
 [display]
 

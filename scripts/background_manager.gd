@@ -1,5 +1,8 @@
 extends Node2D
 
+# 确保Logger单例在编译时可见
+@onready var _logger = get_node("/root/Logger")
+
 # 调试路径
 const POPUP_UI_PATH = "res://scene/generator_popup_ui.tscn"
 
@@ -40,7 +43,7 @@ var flower_scene = preload("res://scene/flower.tscn")
 var bird_scene = preload("res://scene/bird.tscn")
 
 func _ready():
-	print("背景管理器：加载的弹出UI路径 =", POPUP_UI_PATH)
+	_logger.debug("背景管理器：加载的弹出UI路径 = %s" % [POPUP_UI_PATH])
 	
 	# 确保能接收输入
 	set_process_input(true)
@@ -57,14 +60,14 @@ func _ready():
 	# 实例化并设置弹出式UI
 	setup_popup_ui()
 	
-	print("初始生成器类型: ", _get_generator_name(current_generator))
-	print("当前金币: ", coins)
+	_logger.debug("初始生成器类型: %s" % [_get_generator_name(current_generator)])
+	_logger.debug("当前金币: %d" % [coins])
 
 # 确保所有必要的容器节点都存在
 func _ensure_container_nodes():
 	var game_config = get_node_or_null("/root/GameConfig")
 	if not game_config:
-		print("找不到GameConfig，无法确保容器节点")
+		_logger.warning("找不到GameConfig，无法确保容器节点")
 		return
 		
 	# 获取所有生成物类型
@@ -82,7 +85,7 @@ func _ensure_container_nodes():
 				var container = Node2D.new()
 				container.name = container_name
 				add_child(container)
-				print("为生成物类型", template.name, "创建容器节点:", container_name)
+				_logger.info("为生成物类型%s创建容器节点: %s" % [template.name, container_name])
 			
 			# 缓存容器节点引用
 			container_nodes[type] = get_node(container_name)
@@ -96,15 +99,15 @@ func setup_popup_ui():
 	# 连接选择器变更信号
 	if popup_ui.has_signal("generator_selected"):
 		popup_ui.generator_selected.connect(_on_generator_selected)
-		print("成功连接generator_selected信号")
+		_logger.debug("成功连接generator_selected信号")
 	else:
-		print("错误：popup_ui没有generator_selected信号")
+		_logger.error("错误：popup_ui没有generator_selected信号")
 		# 列出所有可用信号
 		var signal_list = popup_ui.get_signal_list()
 		for sig in signal_list:
-			print("可用信号: ", sig.name)
+			_logger.debug("可用信号: %s" % [sig.name])
 	
-	print("弹出式UI设置完成")
+	_logger.debug("弹出式UI设置完成")
 
 # 获取生成器类型名称
 func _get_generator_name(type):
@@ -125,7 +128,7 @@ func _get_generator_name(type):
 
 # 处理生成器选择变更
 func _on_generator_selected(type):
-	print("生成器类型变更为: ", _get_generator_name(type))
+	_logger.debug("生成器类型变更为: %s" % [_get_generator_name(type)])
 	current_generator = type
 
 # 处理输入事件
@@ -134,26 +137,26 @@ func _input(event):
 	if event is InputEventKey and event.pressed and event.keycode == KEY_F3:
 		debug_print_abilities()
 		refresh_generators_config()
-		print("已刷新所有生成物配置")
+		_logger.info("已刷新所有生成物配置")
 	
 	# 如果按下F4键，强制刷新所有花朵
 	if event is InputEventKey and event.pressed and event.keycode == KEY_F4:
-		print("尝试强制刷新所有花朵...")
+		_logger.debug("尝试强制刷新所有花朵...")
 		var flowers_container = get_node_or_null("Flowers")
 		if flowers_container:
 			for flower in flowers_container.get_children():
 				if flower.has_method("_load_config"):
 					var old_reward = flower.hover_coin_reward
 					flower._load_config()
-					print("刷新花朵，奖励从", old_reward, "变为", flower.hover_coin_reward)
+					_logger.debug("刷新花朵，奖励从%.1f变为%.1f" % [old_reward, flower.hover_coin_reward])
 		else:
-			print("没有找到Flowers容器节点")
+			_logger.warning("没有找到Flowers容器节点")
 	
 	# 处理鼠标点击
 	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
 		# 如果事件已经被处理（例如被UI处理）则跳过
 		if get_viewport().is_input_handled():
-			print("事件已被UI处理")
+			_logger.debug("事件已被UI处理")
 			return
 		
 		# 检查是否点击在显示按钮上
@@ -162,7 +165,7 @@ func _input(event):
 			var button = popup_ui.show_button
 			var distance = event.position.distance_to(button.position + button.size/2)
 			if distance < 75:  # 给一个宽松的判定范围
-				print("点击在'打开生成界面'按钮附近")
+				_logger.debug("点击在'打开生成界面'按钮附近")
 				return
 		
 		# 获取点击位置
@@ -185,7 +188,7 @@ func _handle_click(click_position, generator_type):
 				# 放在地面/背景的生成物
 				_handle_ground_placement(click_position, generator_type)
 		else:
-			print("错误：未找到生成物模板, 类型:", generator_type)
+			_logger.error("错误：未找到生成物模板, 类型: %s" % [generator_type])
 	else:
 		# 回退到旧的处理方式
 		if generator_type == GeneratorType.BIRD:
@@ -199,7 +202,7 @@ func _handle_on_tree_placement(click_position, generator_type):
 	# 获取所有树节点
 	var trees_container = get_node_or_null("Trees")
 	if not trees_container:
-		print("错误：找不到树的容器节点")
+		_logger.error("错误：找不到树的容器节点")
 		return
 		
 	var trees = trees_container.get_children()
@@ -217,7 +220,7 @@ func _handle_on_tree_placement(click_position, generator_type):
 	
 	# 如果找到被点击的树
 	if clicked_tree:
-		print("点击在树上，当前选择: ", _get_generator_name(generator_type))
+		_logger.debug("点击在树上，当前选择: %s" % [_get_generator_name(generator_type)])
 		
 		# 计算生成费用 - 使用动态成本
 		var cost = calculate_current_cost(generator_type)
@@ -225,7 +228,7 @@ func _handle_on_tree_placement(click_position, generator_type):
 		
 		# 检查是否有足够金币
 		if coins >= cost:
-			print("生成", _get_generator_name(generator_type), "! 花费 ", cost, " 金币")
+			_logger.info("生成%s! 花费 %d 金币" % [_get_generator_name(generator_type), cost])
 			
 			# 加载场景
 			var scene_instance = _load_and_instantiate_generator(generator_type)
@@ -247,14 +250,14 @@ func _handle_on_tree_placement(click_position, generator_type):
 				# 通知UI更新
 				_on_generator_created(generator_type)
 				
-				print("剩余金币: ", Global.get_coins())
+				_logger.debug("剩余金币: %d" % [Global.get_coins()])
 			else:
-				print("错误：无法实例化场景")
+				_logger.error("错误：无法实例化场景")
 		else:
-			print("金币不足! 需要 ", cost, " 金币，当前只有 ", coins, " 金币")
+			_logger.warning("金币不足! 需要 %d 金币，当前只有 %d 金币" % [cost, coins])
 			MessageBus.get_instance().emit_signal("show_message", "金币不足! 需要 " + str(cost) + " 金币", 2)
 	else:
-		print("没有点击在树上，无法生成" + _get_generator_name(generator_type))
+		_logger.warning("没有点击在树上，无法生成%s" % [_get_generator_name(generator_type)])
 		MessageBus.get_instance().emit_signal("show_message", "请点击在树上生成" + _get_generator_name(generator_type), 2)
 
 # 处理放在地面/背景的生成物
@@ -277,14 +280,14 @@ func _handle_ground_placement(click_position, generator_type):
 	
 	# 如果没有点击在树上，则生成对应物体
 	if not is_on_tree:
-		print("点击空白区域，当前选择: ", _get_generator_name(generator_type))
+		_logger.debug("点击空白区域，当前选择: %s" % [_get_generator_name(generator_type)])
 		
 		# 计算动态生成费用
 		var cost = calculate_current_cost(generator_type)
 		coins = Global.get_coins()  # 获取最新的金币数量
 		
-		print("【调试】当前选择的生成物：", _get_generator_name(generator_type), 
-			"，需要消耗金币：", cost, "，当前金币：", coins)
+		_logger.debug("【调试】当前选择的生成物：%s，需要消耗金币：%d，当前金币：%d" % [
+			_get_generator_name(generator_type), cost, coins])
 		
 		if coins >= cost:
 			# 加载场景并放置
@@ -417,12 +420,12 @@ func calculate_current_cost(type):
 func update_generator_cost(type):
 	var new_cost = calculate_current_cost(type)
 	generator_costs[type] = new_cost
-	print("更新", _get_generator_name(type), "的生成成本为:", new_cost, "金币")
+	_logger.debug("更新%s的生成成本为: %d金币" % [_get_generator_name(type), new_cost])
 	
 	# 如果UI存在，通知UI更新
 	if popup_ui:
 		popup_ui.update_ui_from_config()
-		
+
 # 成功创建生成物后更新UI
 func _on_generator_created(type):
 	# 生成物数量已在各自的处理函数中更新
@@ -435,7 +438,7 @@ func _on_generator_created(type):
 func _try_load_config():
 	var game_config = get_node_or_null("/root/GameConfig")
 	if game_config:
-		print("成功找到GameConfig单例")
+		_logger.info("成功找到GameConfig单例")
 		
 		# 初始化所有生成物的计数器
 		var generator_types = game_config.get_all_generator_types()
@@ -450,26 +453,26 @@ func _try_load_config():
 				generator_costs[type] = template.base_cost
 				cost_growth_factors[type] = template.growth_factor
 		
-		print("已从GameConfig更新生成费用配置:")
+		_logger.debug("已从GameConfig更新生成费用配置:")
 		for type in generator_costs:
-			print("- ", _get_generator_name(type), ": ", generator_costs[type], " 金币")
+			_logger.debug("- %s: %d 金币" % [_get_generator_name(type), generator_costs[type]])
 		
-		print("已从GameConfig更新费用增长系数:")
+		_logger.debug("已从GameConfig更新费用增长系数:")
 		for type in cost_growth_factors:
-			print("- ", _get_generator_name(type), ": x", cost_growth_factors[type])
+			_logger.debug("- %s: x%.2f" % [_get_generator_name(type), cost_growth_factors[type]])
 		
 		# 尝试更新默认生成器
 		if game_config.initial_config.has("default_generator"):
 			var default_type = game_config.initial_config.default_generator
 			if generator_counts.has(default_type):
 				current_generator = default_type
-				print("已从GameConfig更新默认生成器类型: ", _get_generator_name(current_generator))
+				_logger.debug("已从GameConfig更新默认生成器类型: %s" % [_get_generator_name(current_generator)])
 	else:
-		print("GameConfig单例不可用，使用默认配置")
+		_logger.warning("GameConfig单例不可用，使用默认配置")
 
 # 刷新已有生成物的配置
 func refresh_generators_config():
-	print("刷新所有生成物配置...")
+	_logger.info("刷新所有生成物配置...")
 	
 	# 更新树配置
 	var trees_container = get_node_or_null("Trees")
@@ -492,23 +495,23 @@ func refresh_generators_config():
 			if bird.has_method("_load_config"):
 				bird._load_config()
 	
-	print("所有生成物配置已刷新")
+	_logger.info("所有生成物配置已刷新")
 
 # 打印所有能力状态（便于调试）
 func debug_print_abilities():
 	var game_config = get_node_or_null("/root/GameConfig")
 	if not game_config:
-		print("错误: GameConfig不可用")
+		_logger.error("错误: GameConfig不可用")
 		return
 		
-	print("=============== 能力系统调试信息 ===============")
+	_logger.debug("=============== 能力系统调试信息 ===============")
 	
 	var generator_types = game_config.get_all_generator_types()
 	for type in generator_types:
 		var type_name = game_config.get_generator_name(type)
 		var abilities = game_config.get_generator_abilities(type)
 		
-		print(type_name, "能力状态:")
+		_logger.debug("%s能力状态:" % [type_name])
 		
 		for ability_name in abilities:
 			var ability = abilities[ability_name]
@@ -517,46 +520,59 @@ func debug_print_abilities():
 			var effect_per_level = ability.effect_per_level
 			var effect_multiplier = game_config.get_ability_effect_multiplier(type, ability_name)
 			
-			print("- ", ability_name, ": 等级 ", level, "/", max_level, 
-				", 每级效果: ", effect_per_level * 100, "%", 
-				", 当前效果乘数: ", effect_multiplier)
+			_logger.debug("- %s: 等级 %d/%d, 每级效果: %.1f%%, 当前效果乘数: %.2f" % [
+				ability_name, 
+				level, 
+				max_level,
+				effect_per_level * 100,
+				effect_multiplier
+			])
 			
 			# 根据能力类型打印特定信息
 			match ability_name:
 				"efficiency":
 					var base_amount = game_config.get_generator_template(type).generation.amount
 					var boosted_amount = base_amount * effect_multiplier
-					print("  基础产出: ", base_amount, ", 提升后产出: ", boosted_amount)
+					_logger.debug("  基础产出: %.1f, 提升后产出: %.1f" % [base_amount, boosted_amount])
 				"speed":
 					if game_config.get_generator_template(type).generation.has("interval"):
 						var base_interval = game_config.get_generator_template(type).generation.interval
 						var boosted_interval = base_interval / effect_multiplier
-						print("  基础间隔: ", base_interval, "秒, 提升后间隔: ", boosted_interval, "秒")
+						_logger.debug("  基础间隔: %.1f秒, 提升后间隔: %.1f秒" % [base_interval, boosted_interval])
 				"cooldown":
 					if game_config.get_generator_template(type).generation.has("cooldown"):
 						var base_cooldown = game_config.get_generator_template(type).generation.cooldown
 						var boosted_cooldown = base_cooldown / effect_multiplier
-						print("  基础冷却: ", base_cooldown, "秒, 提升后冷却: ", boosted_cooldown, "秒")
+						_logger.debug("  基础冷却: %.1f秒, 提升后冷却: %.1f秒" % [base_cooldown, boosted_cooldown])
 	
-	print("===============================================")
+	_logger.debug("===============================================")
 	
 	# 查看实际生成的对象状态
-	print("当前场景中的生成物状态:")
+	_logger.debug("当前场景中的生成物状态:")
 	
 	# 检查花朵
 	var flowers_container = get_node_or_null("Flowers")
 	if flowers_container:
 		var flowers = flowers_container.get_children()
-		print("场景中花朵数量: ", flowers.size())
+		_logger.debug("场景中花朵数量: %d" % [flowers.size()])
 		for i in range(min(flowers.size(), 3)):  # 只打印前3个花朵信息
 			var flower = flowers[i]
-			print("花朵 #", i, ": 悬停奖励=", flower.hover_coin_reward, ", 冷却时间=", flower.hover_cooldown_time)
+			_logger.debug("花朵 #%d: 悬停奖励=%.1f, 冷却时间=%.1f" % [
+				i, 
+				flower.hover_coin_reward, 
+				flower.hover_cooldown_time
+			])
 	
 	# 检查树木
 	var trees_container = get_node_or_null("Trees")
 	if trees_container:
 		var trees = trees_container.get_children()
-		print("场景中树木数量: ", trees.size())
+		_logger.debug("场景中树木数量: %d" % [trees.size()])
 		for i in range(min(trees.size(), 3)):  # 只打印前3个树木信息
 			var tree = trees[i]
-			print("树木 #", i, ": 产出量=", tree.coin_generation_amount, ", 间隔=", tree.coin_timer.wait_time if tree.coin_timer else "未知")
+			var interval = tree.coin_timer.wait_time if tree.coin_timer else "未知"
+			_logger.debug("树木 #%d: 产出量=%.1f, 间隔=%s" % [
+				i, 
+				tree.coin_generation_amount, 
+				interval
+			])

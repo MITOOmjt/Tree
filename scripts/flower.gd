@@ -1,5 +1,8 @@
 extends Node2D
 
+# 确保Logger单例在编译时可见
+@onready var _logger = get_node("/root/Logger")
+
 var colors = [
 	Color(1, 0, 0, 1),   # 红色
 	Color(1, 0.5, 0, 1), # 橙色
@@ -56,7 +59,7 @@ func _ready():
 	# 尝试从GameConfig加载配置
 	_load_config()
 	
-	print("花已准备就绪，悬停奖励:", hover_coin_reward, "，冷却时间:", hover_cooldown_time, "秒")
+	_logger.info("花已准备就绪，悬停奖励: %s，冷却时间: %s 秒" % [hover_coin_reward, hover_cooldown_time])
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(delta):
@@ -77,7 +80,7 @@ func _process(delta):
 	if is_hovering and hover_cooldown <= 0:
 		_give_hover_reward()
 		hover_cooldown = hover_cooldown_time
-		print("花朵悬停奖励触发，设置冷却时间:", hover_cooldown_time)
+		_logger.debug("花朵悬停奖励触发，设置冷却时间: %s" % [hover_cooldown_time])
 
 # 处理鼠标输入
 func _input(event):
@@ -90,7 +93,7 @@ func _input(event):
 		if distance <= detection_radius:
 			# 点击花朵时增加金币
 			Global.add_coins(1)
-			print("点击花朵，增加1金币")
+			_logger.debug("点击花朵，增加1金币")
 			
 			# 显示浮动文本
 			var floating_text = floating_text_scene.instantiate()
@@ -132,10 +135,11 @@ func _give_hover_reward():
 		debug_multiplier = game_config.get_ability_effect_multiplier(
 			game_config.GeneratorType.FLOWER, "efficiency")
 	
-	print("花产生", hover_coin_reward, "金币！当前总金币:", Global.get_coins(), 
-		"，奖励配置值:", hover_coin_reward,
-		"，效率乘数:", debug_multiplier,
-		"，当前花朵设置:", self.hover_coin_reward)
+	_logger.info("花产生 %s 金币！当前总金币: %s，效率乘数: %s" % [
+		hover_coin_reward, 
+		Global.get_coins(), 
+		debug_multiplier
+	])
 	
 	# 在花的位置显示浮动文本
 	var floating_text = floating_text_scene.instantiate()
@@ -177,7 +181,7 @@ func _on_area_2d_mouse_exited():
 func _load_config():
 	var game_config = get_node_or_null("/root/GameConfig")
 	if game_config:
-		print("花朵执行_load_config()...")
+		_logger.debug("花朵执行_load_config()...")
 		
 		# 使用通用方法计算奖励值
 		var old_reward = hover_coin_reward
@@ -189,9 +193,12 @@ func _load_config():
 		var efficiency_multiplier = game_config.get_ability_effect_multiplier(
 			game_config.GeneratorType.FLOWER, "efficiency")
 		
-		print("从GameConfig加载花悬停金币奖励:", hover_coin_reward,
-			"(基础:", base_amount, "效率乘数:", efficiency_multiplier, 
-			"旧值:", old_reward, ")")
+		_logger.debug("从GameConfig加载花悬停金币奖励: %s (基础: %s, 效率乘数: %s, 旧值: %s)" % [
+			hover_coin_reward,
+			base_amount,
+			efficiency_multiplier,
+			old_reward
+		])
 		
 		# 处理冷却时间
 		if template and template.generation.has("cooldown"):
@@ -205,8 +212,11 @@ func _load_config():
 			var rounded_cooldown = snapped(new_cooldown, 0.1)  # 四舍五入到0.1
 			hover_cooldown_time = rounded_cooldown
 			
-			print("从GameConfig加载花悬停冷却时间:", hover_cooldown_time,
-				"(基础:", base_cooldown, "冷却乘数:", cooldown_multiplier,
-				"旧值:", old_cooldown, ")")
+			_logger.debug("从GameConfig加载花悬停冷却时间: %s (基础: %s, 冷却乘数: %s, 旧值: %s)" % [
+				hover_cooldown_time,
+				base_cooldown,
+				cooldown_multiplier,
+				old_cooldown
+			])
 	else:
-		print("GameConfig单例不可用，使用默认花悬停配置") 
+		_logger.warning("GameConfig单例不可用，使用默认花悬停配置") 

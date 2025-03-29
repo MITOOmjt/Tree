@@ -1,5 +1,8 @@
 extends Node2D
 
+# 确保Logger单例在编译时可见
+@onready var _logger = get_node("/root/Logger")
+
 # 生成金币的数量
 var coin_generation_amount = 1
 # 金币计时器引用
@@ -25,13 +28,13 @@ func _ready():
 	# 添加到trees组，以便背景管理器可以找到所有树木
 	add_to_group("trees")
 	
-	print("树已准备就绪，产生金币:", coin_generation_amount, "，间隔:", coin_timer.wait_time, "秒")
+	_logger.info("树已准备就绪，产生金币: %s，间隔: %s 秒" % [coin_generation_amount, coin_timer.wait_time])
 
 # 从GameConfig加载配置
 func _load_config():
 	var game_config = get_node_or_null("/root/GameConfig")
 	if game_config:
-		print("树执行_load_config()...")
+		_logger.debug("树执行_load_config()...")
 		
 		# 使用通用方法计算奖励值
 		var old_amount = coin_generation_amount
@@ -43,9 +46,12 @@ func _load_config():
 		var efficiency_multiplier = game_config.get_ability_effect_multiplier(
 			game_config.GeneratorType.TREE, "efficiency")
 		
-		print("从GameConfig加载树产生金币数量:", coin_generation_amount,
-			"(基础:", base_amount, "效率乘数:", efficiency_multiplier,
-			"旧值:", old_amount, ")")
+		_logger.debug("从GameConfig加载树产生金币数量: %s (基础: %s, 效率乘数: %s, 旧值: %s)" % [
+			coin_generation_amount,
+			base_amount,
+			efficiency_multiplier,
+			old_amount
+		])
 		
 		# 处理生成间隔
 		if template and template.generation.has("interval") and coin_timer:
@@ -59,11 +65,14 @@ func _load_config():
 			var rounded_interval = snapped(new_interval, 0.1)  # 四舍五入到0.1
 			coin_timer.wait_time = rounded_interval
 			
-			print("从GameConfig加载树产生金币间隔:", coin_timer.wait_time,
-				"(基础:", base_interval, "速度乘数:", speed_multiplier,
-				"旧值:", old_interval, ")")
+			_logger.debug("从GameConfig加载树产生金币间隔: %s (基础: %s, 速度乘数: %s, 旧值: %s)" % [
+				coin_timer.wait_time,
+				base_interval,
+				speed_multiplier,
+				old_interval
+			])
 	else:
-		print("GameConfig单例不可用，使用默认树配置")
+		_logger.warning("GameConfig单例不可用，使用默认树配置")
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(delta):
@@ -79,12 +88,12 @@ func _on_coin_timer_timeout():
 	# 在此处添加金币产生的逻辑
 	if Global:
 		Global.add_coins(coin_generation_amount)
-		print("树产生", coin_generation_amount, "金币，当前总金币: ", Global.get_coins(), "，配置的产出量:", coin_generation_amount)
+		_logger.info("树产生 %s 金币，当前总金币: %s" % [coin_generation_amount, Global.get_coins()])
 		
 		# 显示浮动文本
 		_show_floating_text("+" + str(coin_generation_amount))
 	else:
-		print("错误: Global单例不可用")
+		_logger.error("Global单例不可用")
 
 # 显示浮动文本
 func _show_floating_text(text):
