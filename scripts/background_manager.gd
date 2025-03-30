@@ -213,44 +213,46 @@ func _handle_click(click_position, generator_type):
 
 # 处理需要放在树上的生成物
 func _handle_on_tree_placement(click_position, generator_type):
-	# 获取所有树节点
-	var trees_container = get_node_or_null("Trees")
-	if not trees_container:
-		_logger.error("错误：找不到树的容器节点")
-		return
-		
-	var trees = trees_container.get_children()
+	# 检查是否点击在树上
 	var clicked_tree = null
 	
-	# 检查点击位置是否在某棵树上
-	for tree in trees:
-		var tree_position = tree.global_position
-		var distance = click_position.distance_to(tree_position)
-		
-		# 简单距离检查 - 如果点击位置在树的100像素范围内，认为点击在树上
-		if distance < 100:
-			clicked_tree = tree
-			break
+	# 获取所有树节点
+	var trees_container = get_node_or_null("Trees")
+	if trees_container:
+		var trees = trees_container.get_children()
+		for tree in trees:
+			var tree_position = tree.global_position
+			var distance = click_position.distance_to(tree_position)
+			
+			# 使用动态树木碰撞检测大小，基于树木的scale
+			var detection_radius = 100 * tree.scale.x / 2
+			
+			if distance < detection_radius:
+				clicked_tree = tree
+				_logger.debug("点击在树上，树木位置:%s，点击位置:%s，检测半径:%s" % [
+                    tree_position, click_position, detection_radius])
+				break
 	
-	# 如果找到被点击的树
+	# 如果点击在树上，则生成对应物体
 	if clicked_tree:
-		_logger.debug("点击在树上，当前选择: %s" % [_get_generator_name(generator_type)])
+		_logger.debug("点击在树上，当前选择:%s" % [_get_generator_name(generator_type)])
 		
-		# 计算生成费用 - 使用动态成本
+		# 计算动态生成费用
 		var cost = calculate_current_cost(generator_type)
 		coins = Global.get_coins()  # 获取最新的金币数量
 		
-		# 检查是否有足够金币
+		_logger.debug("需要消耗金币:%d，当前金币:%d" % [cost, coins])
+		
 		if coins >= cost:
-			_logger.info("生成%s! 花费 %d 金币" % [_get_generator_name(generator_type), cost])
-			
-			# 加载场景
+			# 加载场景并放置
 			var scene_instance = _load_and_instantiate_generator(generator_type)
 			if scene_instance:
 				# 计算在树上的相对位置
 				var local_pos = clicked_tree.to_local(click_position)
 				scene_instance.position = local_pos
 				clicked_tree.add_child(scene_instance)
+				
+				_logger.info("在树上生成%s，相对位置:%s" % [_get_generator_name(generator_type), local_pos])
 				
 				# 更新数量
 				generator_counts[generator_type] += 1
@@ -264,11 +266,11 @@ func _handle_on_tree_placement(click_position, generator_type):
 				# 通知UI更新
 				_on_generator_created(generator_type)
 				
-				_logger.debug("剩余金币: %d" % [Global.get_coins()])
+				_logger.debug("剩余金币:%d" % [Global.get_coins()])
 			else:
 				_logger.error("错误：无法实例化场景")
 		else:
-			_logger.warning("金币不足! 需要 %d 金币，当前只有 %d 金币" % [cost, coins])
+			_logger.warning("金币不足! 需要%d金币，当前只有%d金币" % [cost, coins])
 			MessageBus.get_instance().emit_signal("show_message", "金币不足! 需要 " + str(cost) + " 金币", 2)
 	else:
 		_logger.warning("没有点击在树上，无法生成%s" % [_get_generator_name(generator_type)])
@@ -329,10 +331,12 @@ func _handle_ground_placement(click_position, generator_type):
 					# 我们只修正y轴偏移
 					_logger.debug("原始点击位置: %s, 相机位置: %s" % [click_position, camera.position])
 					
-					# 获取屏幕中心位置，即相机默认位置
-					var viewport_center = Vector2(576, 324)  # 使用硬编码的场景中心，与相机默认位置相同
+					# 动态获取视口大小，而不是使用硬编码值
+					var viewport_size = get_viewport_rect().size
+					var viewport_center = viewport_size / 2
+					_logger.debug("视口大小: %s, 视口中心: %s" % [viewport_size, viewport_center])
 					
-					# 如果相机位置与默认位置不同，计算偏移
+					# 如果相机位置与视口中心不同，计算偏移
 					# 相机向下移动(y增加)，点击位置需要向上调整(y减少)，反之亦然
 					var camera_y_offset = viewport_center.y - camera.position.y
 					
@@ -359,8 +363,10 @@ func _handle_ground_placement(click_position, generator_type):
 					container.add_child(scene_instance)
 				else:
 					add_child(scene_instance)
-				
-				print("生成", _get_generator_name(generator_type), "! 花费 ", cost, " 金币")
+                
+                # 记录日志
+				_logger.info("生成%s! 花费%d金币，位置:%s" % [
+                    _get_generator_name(generator_type), cost, corrected_position])
 				
 				# 更新数量
 				generator_counts[generator_type] += 1
@@ -369,21 +375,19 @@ func _handle_ground_placement(click_position, generator_type):
 				update_generator_cost(generator_type)
 				
 				# 扣除金币
-				print("【调试】扣除前金币：", Global.get_coins())
+				_logger.debug("扣除前金币：%d" % [Global.get_coins()])
 				var result = Global.spend_coins(cost)
-				print("【调试】扣除结果：", result, "，扣除后金币：", Global.get_coins())
+				_logger.debug("扣除结果：%s，扣除后金币：%d" % [result, Global.get_coins()])
 				
 				# 通知UI更新
 				_on_generator_created(generator_type)
-				
-				print("剩余金币: ", Global.get_coins())
 			else:
-				print("错误：无法实例化场景")
+				_logger.error("错误：无法实例化场景")
 		else:
-			print("金币不足! 需要 ", cost, " 金币，当前只有 ", coins, " 金币")
+			_logger.warning("金币不足! 需要%d金币，当前只有%d金币" % [cost, coins])
 			MessageBus.get_instance().emit_signal("show_message", "金币不足! 需要 " + str(cost) + " 金币", 2)
 	else:
-		print("点击在树上，不生成" + _get_generator_name(generator_type))
+		_logger.warning("点击在树上，不生成%s" % [_get_generator_name(generator_type)])
 		MessageBus.get_instance().emit_signal("show_message", "请点击空白区域生成" + _get_generator_name(generator_type), 2)
 
 # 加载并实例化生成物场景

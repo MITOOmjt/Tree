@@ -45,10 +45,12 @@ var sprite = null
 func _ready():
 	# 使用Ghibli风格的颜色
 	var random_color = ghibli_colors[randi() % ghibli_colors.size()]
-	$Polygon2D.color = random_color
+	# 花朵不再使用多边形，而是使用精灵，因此不需要设置颜色
+	# $Polygon2D.color = random_color
 	
 	# 保存对花朵精灵的引用
-	sprite = $Polygon2D
+	sprite = $Sprite2D
+	_logger.info("花朵初始化，使用图像资源替代多边形")
 	
 	# 确保启用处理和输入处理
 	set_process(true)
@@ -181,7 +183,7 @@ func _on_mouse_entered():
 	# Ghibli风格的悬停效果
 	if sprite and not is_on_cooldown:
 		var tween = create_tween()
-		tween.tween_property(sprite, "scale", Vector2(1.05, 1.05), 0.2)
+		tween.tween_property(sprite, "scale", Vector2(0.06, 0.06), 0.2)  # 调整缩放值以适应新的基础缩放0.03
 		
 		# 添加轻微发光效果
 		var glow = ColorRect.new()
@@ -192,7 +194,7 @@ func _on_mouse_entered():
 		glow.z_index = -1  # 确保在花朵后面
 		add_child(glow)
 	
-	_logger.debug("鼠标进入花朵区域")
+	_logger.debug("鼠标进入花朵区域，应用悬停效果")
 
 # 鼠标离开花朵区域
 func _on_mouse_exited():
@@ -202,7 +204,7 @@ func _on_mouse_exited():
 	# 恢复正常大小
 	if sprite:
 		var tween = create_tween()
-		tween.tween_property(sprite, "scale", Vector2(1.0, 1.0), 0.2)
+		tween.tween_property(sprite, "scale", Vector2(0.06, 0.06), 0.2)  # 更新为新的基础缩放0.03
 		
 	# 移除悬停光晕
 	if has_node("HoverGlow"):
@@ -370,7 +372,7 @@ func _on_hover_cooldown_timeout():
 		tween.tween_property(sprite, "modulate", Color(1, 1, 1, 1), 0.3)
 		
 		# 添加轻微的"弹跳"效果
-		var original_scale = sprite.scale
+		var original_scale = Vector2(0.07, 0.07)  # 更新为新的基础缩放0.03
 		tween.tween_property(sprite, "scale", original_scale * 1.1, 0.15)
 		tween.tween_property(sprite, "scale", original_scale, 0.15)
 		
@@ -387,3 +389,5 @@ func _on_hover_cooldown_timeout():
 		
 		await glow_tween.finished
 		glow.queue_free()
+		
+		_logger.debug("花朵冷却结束，应用视觉效果")

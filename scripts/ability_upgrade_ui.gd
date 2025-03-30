@@ -263,7 +263,7 @@ func _on_upgrade_button_pressed(ability_name):
 		_update_all_upgrade_buttons()
 		
 		# 刷新所有生成物的配置
-		var background_manager = get_node_or_null("/root/Main/BackgroundManager")
+		var background_manager = get_node_or_null("/root/Main")
 		if background_manager and background_manager.has_method("refresh_generators_config"):
 			_logger.debug("调用刷新配置函数: refresh_generators_config()")
 			background_manager.refresh_generators_config()
@@ -273,7 +273,7 @@ func _on_upgrade_button_pressed(ability_name):
 				_logger.debug("调用调试函数: debug_print_abilities()")
 				background_manager.debug_print_abilities()
 		else:
-			_logger.warning("无法找到BackgroundManager或refresh_generators_config方法")
+			_logger.warning("无法找到BackgroundManager或refresh_generators_config方法，路径:/root/Main")
 		
 		# 发送通知信号
 		if has_node("/root/MessageBus"):
