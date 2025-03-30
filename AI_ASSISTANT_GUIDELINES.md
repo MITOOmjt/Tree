@@ -127,7 +127,10 @@ AI助手在帮助用户编写或修改代码时，应主动检查：
    - 生成物的费用、花朵和树木的金币产出配置应通过GameConfig单例进行管理
    - 脚本中应使用_load_config()函数从GameConfig加载配置
    - 不要在不同脚本中硬编码金币费用或产出值
+   - 生成物的放置位置Y轴偏移量应通过GameConfig的placement_offset参数管理
+   - 修改生成物的Y轴偏移量应通过GameConfig.set_placement_offset(type, offset)方法
    - 提示信息例子：「生成物费用应从GameConfig加载，而非直接在脚本中设置固定值」
+   - 提示信息例子：「要调整树木的放置Y轴偏移，请使用game_config.set_placement_offset(GeneratorType.TREE, -50)」
 
 11. **金币系统的修改和配置**：
    - 金币消耗和获取应通过GameConfig中定义的配置进行管理
@@ -156,6 +159,13 @@ AI助手在帮助用户编写或修改代码时，应主动检查：
    - 修改能力相关代码时，应添加足够的调试输出，包括基础值、效果乘数和最终计算结果
    - 提供明确的日志信息，包括能力名称、当前等级、调整前后的值等
    - 提示信息例子：「添加调试输出，打印"从GameConfig加载花效率乘数:{multiplier}，基础值:{base}，最终奖励:{reward}"」
+
+16. **生成物放置位置配置**：
+   - 生成物的Y轴偏移配置应统一从GameConfig中的placement_offset参数获取
+   - 不要在生成物脚本或background_manager中硬编码位置偏移值
+   - 添加新生成物类型时，必须在其template中包含placement_offset参数
+   - 任何位置调整操作应通过修改GameConfig中的配置而非修改渲染代码
+   - 提示信息例子：「要调整所有花朵的Y轴位置，应修改GameConfig中的placement_offset参数，而非在生成代码中添加硬编码偏移」
 
 ## 项目技术规范
 

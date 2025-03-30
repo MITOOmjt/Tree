@@ -120,6 +120,7 @@ tree/
         "interval": 5.0,            # 产出间隔(秒)
       },
       "placement": "ground",          # 放置类型: ground表示放置在地面/背景
+      "placement_offset": 0,          # 放置时的Y轴偏移量
       "container_node": "Trees",       # 容器节点名称
       "abilities": {                   # 能力系统
         "efficiency": {                # 效率能力 - 增加金币产出
@@ -142,6 +143,11 @@ tree/
   - 点击产出(click)：适用于点击时产生金币的生成物，如鸟类
 
 - **费用增长系数**：每种生成物都有独立的成本增长系数，玩家每建造一个该类型的生成物，下一个相同类型的成本会增加
+
+- **放置位置配置**：使用placement_offset参数来控制生成物放置时的Y轴偏移量
+  - 每种生成物都有独立的偏移值，可以根据需要调整
+  - 例如，不同高度的花朵可以设置不同的Y轴偏移量
+  - 通过`game_config.set_placement_offset(GeneratorType.FLOWER, -20)`来调整
 
 ### 配置加载机制
 所有实体（树、花、鸟）都会在其_ready函数中调用_load_config()来从GameConfig单例加载配置。这确保了游戏数值的一致性和可配置性。
@@ -228,6 +234,7 @@ GeneratorType.NEW_TYPE: {
     "interval": 3.0,                    # 产出间隔(如适用)
   },
   "placement": "ground",                # 放置类型: ground/on_tree
+  "placement_offset": 0,                # 放置时的Y轴偏移量
   "container_node": "NewGenerators"     # 容器节点名称
 }
 ```
@@ -264,6 +271,11 @@ func _load_config():
    - `click`: 点击产出金币(如鸟类)
 
 3. **容器节点**: 指定存放该类型生成物的容器节点名称，系统会自动创建这个节点
+
+4. **位置偏移**: 使用`placement_offset`参数配置生成物的Y轴偏移量
+   - 正值：将生成物向下移动
+   - 负值：将生成物向上移动
+   - 此参数可以在游戏运行时通过`game_config.set_placement_offset(type, value)`动态调整
 
 添加完成后，UI系统会自动创建新生成物的选择按钮和信息显示，无需修改UI代码。背景管理器也会根据放置类型自动处理新生成物的创建和放置逻辑。
 
