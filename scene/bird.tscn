@@ -1,20 +1,21 @@
 [gd_scene load_steps=4 format=3 uid="uid://b4kj2x8p7y6m5"]
 
 [ext_resource type="Script" uid="uid://dbu2bwy8lkfyo" path="res://scripts/bird.gd" id="1_script"]
-[ext_resource type="Texture2D" uid="uid://dd8a2uy6qwn8b" path="res://resource/bird.png" id="2_vhbr1"]
+[ext_resource type="Texture2D" uid="uid://bmdep1pnvdufl" path="res://resource/bird.png" id="2_vhbr1"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_iut0p"]
-radius = 32.0
+radius = 48.0
 
 [node name="Bird" type="Node2D"]
 script = ExtResource("1_script")
 
 [node name="BirdSprite" type="Sprite2D" parent="."]
 position = Vector2(0, -16)
-scale = Vector2(0.12, 0.12)
+scale = Vector2(0.0400006, 0.0400006)
 texture = ExtResource("2_vhbr1")
 
 [node name="ClickArea" type="Area2D" parent="."]
+input_pickable = true
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="ClickArea"]
 position = Vector2(0, -16)
