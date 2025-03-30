@@ -55,8 +55,20 @@ var style_variants = {
 }
 
 func _ready():
+	# 检查字体文件是否存在
+	check_font_files()
 	# 加载字体
 	load_fonts()
+
+# 检查字体文件是否存在
+func check_font_files():
+	var missing_fonts = []
+	for key in font_paths:
+		if not FileAccess.file_exists(font_paths[key]):
+			missing_fonts.append(key)
+	
+	if missing_fonts.size() > 0:
+		push_warning("吉卜力主题: 以下字体文件不存在: %s" % [missing_fonts])
 
 # 加载所有字体
 func load_fonts():
@@ -65,16 +77,21 @@ func load_fonts():
 		if font_data:
 			fonts[key] = font_data
 		else:
-			push_error("吉卜力主题: 无法加载字体 '%s'" % key)
+			push_warning("吉卜力主题: 无法加载字体 '%s'，将使用默认字体" % key)
 
 # 加载单个字体文件
 func load_font(path):
-	var font = FontFile.new()
-	var err = font.load_dynamic_font(path)
-	if err != OK:
-		push_error("加载字体失败: %s (错误代码: %d)" % [path, err])
+	if not FileAccess.file_exists(path):
+		push_warning("吉卜力主题: 字体文件不存在: %s" % [path])
 		return null
-	return font
+	
+	# 在Godot 4中，直接使用load加载字体资源
+	var font_resource = load(path)
+	if font_resource == null:
+		push_warning("吉卜力主题: 加载字体失败: %s" % [path])
+		return null
+	
+	return font_resource
 
 # 创建一个按钮的普通样式
 func create_button_normal_style(color_variant = "medium"):
@@ -178,8 +195,10 @@ func create_panel_style(color_variant = "light"):
 
 # 应用Ghibli主题到按钮
 func apply_button_theme(button, color_variant = "medium", font_size = 16):
-	# 设置字体
-	button.add_theme_font_override("font", fonts.regular)
+	# 设置字体，添加安全检查
+	if fonts.regular != null:
+		button.add_theme_font_override("font", fonts.regular)
+	
 	button.add_theme_font_size_override("font_size", font_size)
 	
 	# 设置文本颜色
@@ -207,13 +226,14 @@ func apply_button_theme(button, color_variant = "medium", font_size = 16):
 
 # 应用Ghibli主题到标签
 func apply_label_theme(label, text_variant = "medium", font_size = 16, use_bold = false, use_serif = false):
-	# 设置字体
-	if use_bold:
+	# 设置字体，添加安全检查
+	if use_bold and fonts.bold != null:
 		label.add_theme_font_override("font", fonts.bold)
-	elif use_serif:
+	elif use_serif and fonts.serif != null:
 		label.add_theme_font_override("font", fonts.serif)
-	else:
+	elif fonts.regular != null:
 		label.add_theme_font_override("font", fonts.regular)
+	# 不设置字体覆盖，使用默认字体
 	
 	label.add_theme_font_size_override("font_size", font_size)
 	
@@ -282,23 +302,30 @@ func apply_slider_theme(slider, color_variant = "green"):
 
 # 应用标题样式 - 大标题文本
 func apply_title_style(label, color_variant = "dark", font_size = 28):
+	# 先应用基础标签样式
 	apply_label_theme(label, color_variant, font_size, true, false)
 	
 	# 添加描边效果
-	label.add_theme_color_override("font_outline_color", colors.background_light)
-	label.add_theme_constant_override("outline_size", 1)
-	
-	# 添加阴影效果
-	label.add_theme_constant_override("shadow_offset_x", 2)
-	label.add_theme_constant_override("shadow_offset_y", 2)
-	label.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 0.2))
+	if label:
+		label.add_theme_color_override("font_outline_color", colors.background_light)
+		label.add_theme_constant_override("outline_size", 1)
+		
+		# 添加阴影效果
+		label.add_theme_constant_override("shadow_offset_x", 2)
+		label.add_theme_constant_override("shadow_offset_y", 2)
+		label.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 0.2))
 
 # 应用子标题样式
 func apply_subtitle_style(label, color_variant = "medium", font_size = 20):
+	# 先应用基础标签样式
 	apply_label_theme(label, color_variant, font_size, false, true)
 
 # 创建带有吉卜力风格的图标按钮 (使用颜色代替图标)
 func create_icon_button(parent, icon_color, size = Vector2(32, 32), tooltip = ""):
+	if not is_instance_valid(parent):
+		push_warning("吉卜力主题: 无法创建图标按钮，父节点无效")
+		return null
+		
 	var btn = Button.new()
 	var icon = ColorRect.new()
 	
@@ -325,10 +352,11 @@ func create_icon_button(parent, icon_color, size = Vector2(32, 32), tooltip = ""
 
 # 应用Ghibli主题到全局主题
 func apply_to_theme(theme):
-	# 设置默认字体和颜色
-	theme.set_font("font", "Label", fonts.regular)
-	theme.set_font("font", "Button", fonts.regular)
-	theme.set_font("font", "LineEdit", fonts.regular)
+	# 设置默认字体和颜色，添加安全检查
+	if fonts.regular != null:
+		theme.set_font("font", "Label", fonts.regular)
+		theme.set_font("font", "Button", fonts.regular)
+		theme.set_font("font", "LineEdit", fonts.regular)
 	
 	# 设置默认颜色
 	theme.set_color("font_color", "Label", colors.text_dark)

@@ -134,8 +134,8 @@ func _ready():
 	
 	# 创建显示按钮（位于屏幕中间位置更容易看到）
 	show_button = Button.new()
-	show_button.text = "打开生成界面"
-	show_button.size = Vector2(250, 60)
+	show_button.text = "森林资源"
+	show_button.size = Vector2(120, 40)  # 减小按钮尺寸，更适合右上角
 	show_button.visible = false  # 初始隐藏
 	
 	# 确保按钮层级在最上方
@@ -144,7 +144,7 @@ func _ready():
 	# 添加Ghibli风格的样式
 	var font = show_button.get_theme_font("font")
 	if font:
-		show_button.add_theme_font_size_override("font_size", 22)
+		show_button.add_theme_font_size_override("font_size", 18)  # 较小的字体尺寸
 	
 	# Ghibli风格的柔和颜色
 	show_button.add_theme_color_override("font_color", Color(0.25, 0.22, 0.2))  # 深棕色文字
@@ -155,22 +155,26 @@ func _ready():
 	var normal_style = show_button.get_theme_stylebox("normal")
 	if normal_style is StyleBoxFlat:
 		# 使用温暖的米色作为背景
-		normal_style.bg_color = Color(0.94, 0.91, 0.82, 0.95)  # 温暖的米色，稍微透明
+		normal_style.bg_color = Color(0.95, 0.95, 0.9, 0.9)  # 半透明浅米色背景
 		# 圆润的边角
-		normal_style.corner_radius_top_left = 16
-		normal_style.corner_radius_top_right = 16
-		normal_style.corner_radius_bottom_left = 16
-		normal_style.corner_radius_bottom_right = 16
+		normal_style.corner_radius_top_left = 6
+		normal_style.corner_radius_top_right = 6
+		normal_style.corner_radius_bottom_left = 6
+		normal_style.corner_radius_bottom_right = 6
 		# 柔和的边框
 		normal_style.border_width_top = 2
 		normal_style.border_width_right = 2
 		normal_style.border_width_bottom = 2
 		normal_style.border_width_left = 2
-		normal_style.border_color = Color(0.6, 0.5, 0.4, 0.7)  # 淡棕色边框
+		normal_style.border_color = Color(0.7, 0.3, 0.3, 0.8)  # 红棕色边框
 		# 柔和的阴影
 		normal_style.shadow_color = Color(0.2, 0.18, 0.15, 0.4)
 		normal_style.shadow_size = 4
 		normal_style.shadow_offset = Vector2(2, 2)
+		normal_style.content_margin_left = 10
+		normal_style.content_margin_right = 10
+		normal_style.content_margin_top = 5
+		normal_style.content_margin_bottom = 5
 		
 	# 创建悬停样式
 	show_button.add_theme_stylebox_override("hover", StyleBoxFlat.new())
@@ -242,6 +246,10 @@ func _ready():
 	if current_selection_label:
 		current_selection_label.add_theme_color_override("font_color", Color(0.35, 0.3, 0.25))  # 深棕色文字
 		current_selection_label.add_theme_font_size_override("font_size", 18)
+	
+	# 确保能够接收窗口大小改变事件
+	get_viewport().size_changed.connect(_on_window_size_changed)
+	print("连接了窗口大小改变信号")
 	
 	print("PopupUI: 初始化完成")
 
@@ -472,11 +480,12 @@ func _on_popup_hide():
 	
 	# 如果是手动关闭，我们显示显示按钮
 	if manual_close:
+		# 先重新定位按钮，确保在正确位置
+		call_deferred("_position_show_button")
+		# 然后显示按钮
 		show_button.visible = true
 		manual_close = false
 		print("手动关闭：按钮已设置为可见")
-		# 使用统一的方法设置按钮位置
-		call_deferred("_position_show_button")
 	else:
 		# 如果是自动关闭（点击外部），则重新显示面板
 		if not allow_hide:
@@ -484,9 +493,11 @@ func _on_popup_hide():
 			call_deferred("_reshow_popup")
 		else:
 			allow_hide = false
-			show_button.visible = true  # 确保按钮可见
-			print("自动关闭且允许隐藏：按钮已设置为可见")
+			# 先重新定位按钮，确保在正确位置
 			call_deferred("_position_show_button")
+			# 然后显示按钮
+			show_button.visible = true
+			print("自动关闭且允许隐藏：按钮已设置为可见")
 
 # 处理右上角X按钮关闭请求
 func _on_popup_close_requested():
@@ -495,9 +506,10 @@ func _on_popup_close_requested():
 	allow_hide = true  # 允许面板隐藏
 	$PopupPanel.hide()
 	
-	# 确保显示按钮显示
-	show_button.visible = true
+	# 先重新定位按钮，确保在正确位置
 	call_deferred("_position_show_button")
+	# 再显示按钮
+	show_button.visible = true
 	
 	print("PopupUI: 用户通过右上角X按钮关闭了界面")
 
@@ -512,10 +524,10 @@ func _on_close_button_pressed():
 	allow_hide = true  # 允许面板隐藏
 	$PopupPanel.hide()
 	
-	# 确保显示按钮显示
-	show_button.visible = true
-	print("关闭面板，按钮已设置为可见")
+	# 先重新定位按钮，确保在正确位置
 	call_deferred("_position_show_button")
+	# 再显示按钮
+	show_button.visible = true
 	
 	print("PopupUI: 用户手动关闭了界面")
 
@@ -524,6 +536,13 @@ func _on_show_button_pressed():
 	print("PopupUI: 显示按钮被点击")
 	show_button.visible = false
 	print("按钮已隐藏，准备显示面板")
+	
+	# 更新面板位置，避免面板位置也出现问题
+	var popup = $PopupPanel
+	var viewport_size = get_viewport().size
+	popup.position = Vector2(viewport_size.x - popup.size.x - 20, 250)
+	
+	# 显示面板
 	$PopupPanel.popup()
 	
 	# 显示界面时更新UI
@@ -675,9 +694,10 @@ func _on_coins_changed(new_amount):
 # 确保按钮位于正确位置
 func _notification(what):
 	if what == NOTIFICATION_WM_SIZE_CHANGED:
-		# 窗口大小改变时，重新定位按钮
-		if show_button and show_button.visible:
+		# 窗口大小改变时，重新定位按钮，无论其是否可见
+		if show_button:
 			call_deferred("_position_show_button")
+			print("窗口大小改变，重新定位按钮")
 			
 # 每帧更新
 func _process(delta):
@@ -733,22 +753,36 @@ func _input(event):
 
 # 设置显示按钮位置（延迟调用，确保视口大小已准备好）
 func _position_show_button():
-	# 放在屏幕中下方位置，更明显
+	# 保存当前可见状态
+	var was_visible = show_button.visible
+	
+	# 获取视口大小
 	var viewport_size = get_viewport().size
 	var old_position = show_button.position
-	show_button.position = Vector2((viewport_size.x - show_button.size.x) / 2, viewport_size.y - 100)
 	
+	# 设置新位置
+	show_button.position = Vector2(viewport_size.x - show_button.size.x - 20, 20)
+
 	# 确保按钮在视图范围内
-	if show_button.position.y < 0 or show_button.position.y > viewport_size.y:
-		show_button.position.y = viewport_size.y - 100
+	if show_button.position.y < 0:
+		show_button.position.y = 20
+	if show_button.position.x < viewport_size.x - show_button.size.x:
+		show_button.position.x = viewport_size.x - show_button.size.x - 20
 	
+	# 检查最终位置是否在视口内
+	if show_button.position.x < 0 or show_button.position.x > viewport_size.x or \
+	   show_button.position.y < 0 or show_button.position.y > viewport_size.y:
+		# 如果超出范围，强制设置到右上角安全位置
+		show_button.position = Vector2(max(0, viewport_size.x - show_button.size.x - 20), 20)
+		print("按钮位置超出范围，强制设置到安全位置")
+
 	# 确保按钮添加到正确的父节点
 	if show_button.get_parent() != self:
 		print("警告：按钮父节点不正确，重新添加")
 		if show_button.get_parent():
 			show_button.get_parent().remove_child(show_button)
 		add_child(show_button)
-		show_button.visible = true
+		show_button.visible = was_visible  # 恢复之前的可见状态
 	
 	# 调试输出
 	print("按钮定位: ", 
@@ -758,7 +792,7 @@ func _position_show_button():
 		"可见=", show_button.visible,
 		"视口大小=(", viewport_size.x, ",", viewport_size.y, ")",
 		"父节点=", show_button.get_parent().name)
-		
+
 # 在_ready函数最后添加检查
 func _check_initial_button_state():
 	print("初始检查按钮状态")
@@ -770,3 +804,13 @@ func _check_initial_button_state():
 	
 	# 设置初始位置
 	call_deferred("_position_show_button")
+
+# 添加窗口大小改变的处理函数
+func _on_window_size_changed():
+	print("检测到窗口大小改变")
+	call_deferred("_position_show_button")
+	
+	# 如果面板可见，同时更新面板位置
+	if $PopupPanel.visible:
+		var viewport_size = get_viewport().size
+		$PopupPanel.position = Vector2(viewport_size.x - $PopupPanel.size.x - 20, 250)
