@@ -307,7 +307,30 @@ func _handle_ground_placement(click_position, generator_type):
 			# 加载场景并放置
 			var scene_instance = _load_and_instantiate_generator(generator_type)
 			if scene_instance:
-				scene_instance.position = click_position
+				# 修正鼠标点击位置考虑相机偏移
+				var camera = get_node_or_null("Camera2D")
+				var corrected_position = click_position
+				
+				if camera:
+					# 我们只修正y轴偏移
+					_logger.debug("原始点击位置: %s, 相机位置: %s" % [click_position, camera.position])
+					
+					# 获取屏幕中心位置，即相机默认位置
+					var viewport_center = Vector2(576, 324)  # 使用硬编码的场景中心，与相机默认位置相同
+					
+					# 如果相机位置与默认位置不同，计算偏移
+					# 相机向下移动(y增加)，点击位置需要向上调整(y减少)，反之亦然
+					var y_offset = viewport_center.y - camera.position.y
+					
+					# 应用y轴修正
+					corrected_position = Vector2(click_position.x, click_position.y + y_offset)
+					
+					_logger.debug("修正后点击位置: %s, 应用的y轴偏移: %s" % [corrected_position, y_offset])
+				else:
+					_logger.warning("找不到相机节点，无法修正位置")
+				
+				# 使用修正后的位置而不是原始点击位置
+				scene_instance.position = corrected_position
 				
 				# 获取合适的容器节点
 				var container = null
