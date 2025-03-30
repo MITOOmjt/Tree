@@ -3,8 +3,9 @@ extends CanvasLayer
 @onready var _logger = get_node("/root/Logger")
 @onready var coins_label = $Control/Panel/CoinsLabel
 @onready var message_label = $Control/MessagePanel/MessageLabel
+@onready var help_label = $Control/HelpLabel
 
-var default_message = "点击树生成鸟 (花费10金币)"
+var default_message = "选择你想生成的风景，开始建立森林吧"
 var message_timer: Timer
 
 func _ready():
@@ -63,22 +64,8 @@ func _apply_ghibli_style():
 	# 金币面板
 	var coins_panel = $Control/Panel
 	if coins_panel:
-		# 创建Ghibli风格的面板 - 类似参考图片中的米黄色面板
-		var panel_style = StyleBoxFlat.new()
-		panel_style.bg_color = Color(0.98, 0.92, 0.75, 0.98)  # 淡黄色背景
-		panel_style.corner_radius_top_left = 15
-		panel_style.corner_radius_top_right = 15
-		panel_style.corner_radius_bottom_left = 15
-		panel_style.corner_radius_bottom_right = 15
-		panel_style.border_width_top = 1
-		panel_style.border_width_right = 1
-		panel_style.border_width_bottom = 1
-		panel_style.border_width_left = 1
-		panel_style.border_color = Color(0.85, 0.75, 0.6, 0.8)  # 米棕色边框
-		panel_style.shadow_color = Color(0.2, 0.18, 0.15, 0.2)
-		panel_style.shadow_size = 2
-		panel_style.shadow_offset = Vector2(1, 1)
-		coins_panel.add_theme_stylebox_override("panel", panel_style)
+		# 应用吉卜力面板风格
+		ghibli_theme.apply_panel_theme(coins_panel, "yellow")
 		
 		# 移除原来的ColorRect，使用StyleBox作为背景
 		var color_rect = coins_panel.get_node_or_null("ColorRect")
@@ -87,8 +74,7 @@ func _apply_ghibli_style():
 		
 		# 设置金币标签样式
 		if coins_label:
-			coins_label.add_theme_font_size_override("font_size", 24)
-			coins_label.add_theme_color_override("font_color", Color(0.4, 0.3, 0.2))  # 深棕色文字
+			ghibli_theme.apply_label_theme(coins_label, "dark", 24, true, false)
 			
 			# 添加金币图标
 			var coin_icon = TextureRect.new()
@@ -122,35 +108,31 @@ func _apply_ghibli_style():
 				coins_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
 				coins_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 				coins_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+			else:
+				# 如果没有图标，直接应用样式
+				ghibli_theme.apply_label_theme(coins_label, "dark", 24, true, false)
 	
 	# 消息面板
 	var message_panel = $Control/MessagePanel
 	if message_panel:
-		# 创建Ghibli风格的面板 - 类似参考图片中的风格
-		var panel_style = StyleBoxFlat.new()
-		panel_style.bg_color = Color(0.98, 0.92, 0.75, 0.98)  # 淡黄色背景
-		panel_style.corner_radius_top_left = 15
-		panel_style.corner_radius_top_right = 15
-		panel_style.corner_radius_bottom_left = 15
-		panel_style.corner_radius_bottom_right = 15
-		panel_style.border_width_top = 1
-		panel_style.border_width_right = 1
-		panel_style.border_width_bottom = 1
-		panel_style.border_width_left = 1
-		panel_style.border_color = Color(0.85, 0.75, 0.6, 0.8)  # 米棕色边框
-		panel_style.shadow_color = Color(0.2, 0.18, 0.15, 0.2)
-		panel_style.shadow_size = 2
-		panel_style.shadow_offset = Vector2(1, 1)
-		message_panel.add_theme_stylebox_override("panel", panel_style)
+		# 创建Ghibli风格的面板
+		ghibli_theme.apply_panel_theme(message_panel, "green")
 		
 		# 设置消息标签样式
 		if message_label:
-			message_label.add_theme_font_size_override("font_size", 16)
-			message_label.add_theme_color_override("font_color", Color(0.4, 0.3, 0.2))  # 深棕色文字
+			ghibli_theme.apply_label_theme(message_label, "dark", 16)
 			message_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 			message_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 			message_label.anchor_right = 1.0
 			message_label.anchor_bottom = 1.0
+	
+	# 帮助标签
+	if help_label:
+		ghibli_theme.apply_label_theme(help_label, "medium", 14, false, true)
+		# 添加轻微的阴影效果
+		help_label.add_theme_constant_override("shadow_offset_x", 1)
+		help_label.add_theme_constant_override("shadow_offset_y", 1)
+		help_label.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 0.2))
 	
 	# 添加装饰性元素
 	_add_decorative_elements()
@@ -162,58 +144,32 @@ func _add_decorative_elements():
 	if not control:
 		return
 	
-	# 创建小鸟装饰 - 类似参考图片中的蓝色小鸟
-	var bird = ColorRect.new()
-	bird.name = "DecorativeBird"
-	bird.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	bird.color = Color(0.5, 0.7, 0.9, 1.0)  # 蓝色
-	bird.size = Vector2(25, 20)
+	# 移除旧的装饰元素
+	var old_bird = control.get_node_or_null("DecorativeBird")
+	if old_bird:
+		old_bird.queue_free()
+	var old_beak = control.get_node_or_null("DecorativeBeak")
+	if old_beak:
+		old_beak.queue_free()
+	var old_eye = control.get_node_or_null("DecorativeEye")
+	if old_eye:
+		old_eye.queue_free()
+	
+	# 使用真实的鸟图片
+	var bird_sprite = Sprite2D.new()
+	bird_sprite.name = "DecorativeBird"
+	bird_sprite.texture = load("res://resource/bird.png")
 	
 	# 放在消息面板附近
 	var message_panel = $Control/MessagePanel
 	var bird_pos = Vector2(message_panel.position.x + message_panel.size.x + 20, message_panel.position.y)
-	bird.position = bird_pos
+	bird_sprite.position = bird_pos
+	bird_sprite.scale = Vector2(0.08, 0.08)  # 调整大小
 	
-	# 应用圆角样式
-	var bird_style = StyleBoxFlat.new()
-	bird_style.bg_color = bird.color
-	bird_style.corner_radius_top_left = 10
-	bird_style.corner_radius_top_right = 12
-	bird_style.corner_radius_bottom_left = 8
-	bird_style.corner_radius_bottom_right = 8
-	bird.add_theme_stylebox_override("panel", bird_style)
-	
-	control.add_child(bird)
-	
-	# 添加鸟啄
-	var beak = ColorRect.new()
-	beak.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	beak.color = Color(0.9, 0.7, 0.2, 1.0)  # 橙黄色
-	beak.size = Vector2(8, 5)
-	beak.position = Vector2(bird.position.x + 20, bird.position.y + 8)
-	control.add_child(beak)
-	
-	# 添加眼睛
-	var eye = ColorRect.new()
-	eye.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	eye.color = Color(0.1, 0.1, 0.1, 1.0)  # 黑色
-	eye.size = Vector2(3, 3)
-	eye.position = Vector2(bird.position.x + 18, bird.position.y + 6)
-	control.add_child(eye)
+	control.add_child(bird_sprite)
 	
 	# 添加轻微动画
 	var tween = create_tween()
 	tween.set_loops()
-	tween.tween_property(bird, "position:y", bird.position.y - 5, 1.0)
-	tween.tween_property(bird, "position:y", bird.position.y, 1.0)
-	
-	# 同步移动啄和眼睛
-	var beak_tween = create_tween()
-	beak_tween.set_loops()
-	beak_tween.tween_property(beak, "position:y", beak.position.y - 5, 1.0)
-	beak_tween.tween_property(beak, "position:y", beak.position.y, 1.0)
-	
-	var eye_tween = create_tween()
-	eye_tween.set_loops()
-	eye_tween.tween_property(eye, "position:y", eye.position.y - 5, 1.0)
-	eye_tween.tween_property(eye, "position:y", eye.position.y, 1.0)
+	tween.tween_property(bird_sprite, "position:y", bird_sprite.position.y - 5, 1.0)
+	tween.tween_property(bird_sprite, "position:y", bird_sprite.position.y, 1.0)
