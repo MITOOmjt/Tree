@@ -86,6 +86,49 @@ func _ready():
 	close_button = Button.new()
 	close_button.text = "关闭"
 	close_button.size_flags_horizontal = Control.SIZE_SHRINK_END
+	close_button.custom_minimum_size = Vector2(120, 40)
+	
+	# Ghibli风格的按钮样式
+	close_button.add_theme_font_size_override("font_size", 18)
+	close_button.add_theme_color_override("font_color", Color(0.25, 0.22, 0.2))  # 深棕色文字
+	close_button.add_theme_color_override("font_color_hover", Color(0.4, 0.3, 0.2))  # 悬停时为温暖的棕色
+	
+	# 创建样式盒子
+	close_button.add_theme_stylebox_override("normal", StyleBoxFlat.new())
+	var close_normal_style = close_button.get_theme_stylebox("normal")
+	if close_normal_style is StyleBoxFlat:
+		close_normal_style.bg_color = Color(0.9, 0.85, 0.78, 0.95)  # 淡棕色背景
+		close_normal_style.corner_radius_top_left = 14
+		close_normal_style.corner_radius_top_right = 14
+		close_normal_style.corner_radius_bottom_left = 14
+		close_normal_style.corner_radius_bottom_right = 14
+		close_normal_style.border_width_top = 2
+		close_normal_style.border_width_right = 2
+		close_normal_style.border_width_bottom = 2
+		close_normal_style.border_width_left = 2
+		close_normal_style.border_color = Color(0.6, 0.5, 0.4, 0.7)  # 淡棕色边框
+		close_normal_style.shadow_color = Color(0.2, 0.18, 0.15, 0.4)
+		close_normal_style.shadow_size = 3
+		close_normal_style.shadow_offset = Vector2(2, 2)
+		
+	# 创建悬停样式
+	close_button.add_theme_stylebox_override("hover", StyleBoxFlat.new())
+	var close_hover_style = close_button.get_theme_stylebox("hover")
+	if close_hover_style is StyleBoxFlat:
+		close_hover_style.bg_color = Color(0.82, 0.78, 0.7, 0.95)  # 更亮的淡棕色
+		close_hover_style.corner_radius_top_left = 14
+		close_hover_style.corner_radius_top_right = 14
+		close_hover_style.corner_radius_bottom_left = 14
+		close_hover_style.corner_radius_bottom_right = 14
+		close_hover_style.border_width_top = 2
+		close_hover_style.border_width_right = 2
+		close_hover_style.border_width_bottom = 2
+		close_hover_style.border_width_left = 2
+		close_hover_style.border_color = Color(0.5, 0.45, 0.35, 0.7)
+		close_hover_style.shadow_color = Color(0.2, 0.18, 0.15, 0.4)
+		close_hover_style.shadow_size = 3
+		close_hover_style.shadow_offset = Vector2(2, 2)
+	
 	popup.get_node("MarginContainer/VBoxContainer").add_child(close_button)
 	close_button.pressed.connect(_on_close_button_pressed)
 	
@@ -98,30 +141,55 @@ func _ready():
 	# 确保按钮层级在最上方
 	show_button.z_index = 100
 	
-	# 添加样式使按钮更明显
+	# 添加Ghibli风格的样式
 	var font = show_button.get_theme_font("font")
 	if font:
 		show_button.add_theme_font_size_override("font_size", 22)
-	show_button.add_theme_color_override("font_color", Color(1, 1, 1))
-	show_button.add_theme_color_override("font_color_hover", Color(1, 1, 0.3))
+	
+	# Ghibli风格的柔和颜色
+	show_button.add_theme_color_override("font_color", Color(0.25, 0.22, 0.2))  # 深棕色文字
+	show_button.add_theme_color_override("font_color_hover", Color(0.4, 0.3, 0.2))  # 悬停时为温暖的棕色
+	
+	# 创建一个圆角边框的样式盒子
 	show_button.add_theme_stylebox_override("normal", StyleBoxFlat.new())
 	var normal_style = show_button.get_theme_stylebox("normal")
 	if normal_style is StyleBoxFlat:
-		normal_style.bg_color = Color(0.3, 0.7, 0.4, 1.0)  # 完全不透明
-		normal_style.corner_radius_top_left = 10
-		normal_style.corner_radius_top_right = 10
-		normal_style.corner_radius_bottom_left = 10
-		normal_style.corner_radius_bottom_right = 10
-		# 添加明显的边框
-		normal_style.border_width_top = 4
-		normal_style.border_width_right = 4
-		normal_style.border_width_bottom = 4
-		normal_style.border_width_left = 4
-		normal_style.border_color = Color(1.0, 1.0, 0.3, 1.0)
-		# 添加阴影
-		normal_style.shadow_color = Color(0, 0, 0, 0.5)
-		normal_style.shadow_size = 5
+		# 使用温暖的米色作为背景
+		normal_style.bg_color = Color(0.94, 0.91, 0.82, 0.95)  # 温暖的米色，稍微透明
+		# 圆润的边角
+		normal_style.corner_radius_top_left = 16
+		normal_style.corner_radius_top_right = 16
+		normal_style.corner_radius_bottom_left = 16
+		normal_style.corner_radius_bottom_right = 16
+		# 柔和的边框
+		normal_style.border_width_top = 2
+		normal_style.border_width_right = 2
+		normal_style.border_width_bottom = 2
+		normal_style.border_width_left = 2
+		normal_style.border_color = Color(0.6, 0.5, 0.4, 0.7)  # 淡棕色边框
+		# 柔和的阴影
+		normal_style.shadow_color = Color(0.2, 0.18, 0.15, 0.4)
+		normal_style.shadow_size = 4
 		normal_style.shadow_offset = Vector2(2, 2)
+		
+	# 创建悬停样式
+	show_button.add_theme_stylebox_override("hover", StyleBoxFlat.new())
+	var hover_style = show_button.get_theme_stylebox("hover")
+	if hover_style is StyleBoxFlat:
+		# 悬停时背景为淡绿色
+		hover_style.bg_color = Color(0.82, 0.9, 0.75, 0.95)  # 淡绿色，Ghibli常用的自然色调
+		hover_style.corner_radius_top_left = 16
+		hover_style.corner_radius_top_right = 16
+		hover_style.corner_radius_bottom_left = 16
+		hover_style.corner_radius_bottom_right = 16
+		hover_style.border_width_top = 2
+		hover_style.border_width_right = 2
+		hover_style.border_width_bottom = 2
+		hover_style.border_width_left = 2
+		hover_style.border_color = Color(0.5, 0.6, 0.4, 0.7)  # 淡绿色边框
+		hover_style.shadow_color = Color(0.2, 0.18, 0.15, 0.4)
+		hover_style.shadow_size = 4
+		hover_style.shadow_offset = Vector2(2, 2)
 
 	# 将按钮添加到顶层，确保可见
 	add_child(show_button)
@@ -144,6 +212,37 @@ func _ready():
 	# 检查初始按钮状态
 	call_deferred("_check_initial_button_state")
 	
+	# 设置PopupPanel的Ghibli风格
+	# 创建Ghibli风格的面板背景
+	var panel_style = StyleBoxFlat.new()
+	panel_style.bg_color = Color(0.96, 0.95, 0.9, 0.98)  # 浅米色背景，接近白色但更温暖
+	panel_style.corner_radius_top_left = 20
+	panel_style.corner_radius_top_right = 20
+	panel_style.corner_radius_bottom_left = 20
+	panel_style.corner_radius_bottom_right = 20
+	panel_style.border_width_top = 2
+	panel_style.border_width_right = 2
+	panel_style.border_width_bottom = 2
+	panel_style.border_width_left = 2
+	panel_style.border_color = Color(0.75, 0.7, 0.6, 0.8)  # 温暖的淡棕色边框
+	panel_style.shadow_color = Color(0.2, 0.18, 0.15, 0.3)
+	panel_style.shadow_size = 8
+	panel_style.shadow_offset = Vector2(3, 3)
+	
+	# 应用样式到面板
+	popup.add_theme_stylebox_override("panel", panel_style)
+	
+	# 设置面板标题颜色
+	var title_label = popup.get_node_or_null("MarginContainer/VBoxContainer/TitleLabel")
+	if title_label:
+		title_label.add_theme_color_override("font_color", Color(0.35, 0.3, 0.25))  # 深棕色文字
+		title_label.add_theme_font_size_override("font_size", 24)
+		
+	# 设置当前选择标签样式
+	if current_selection_label:
+		current_selection_label.add_theme_color_override("font_color", Color(0.35, 0.3, 0.25))  # 深棕色文字
+		current_selection_label.add_theme_font_size_override("font_size", 18)
+	
 	print("PopupUI: 初始化完成")
 
 # 创建生成物UI项
@@ -163,50 +262,161 @@ func _create_generator_ui_items(parent_container):
 		# 创建项容器
 		var item_container = HBoxContainer.new()
 		item_container.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		item_container.custom_minimum_size = Vector2(0, 75)  # 增加高度
 		
-		# 创建颜色标识
+		# Ghibli风格：添加美观的间距
+		item_container.add_theme_constant_override("separation", 12)
+		
+		# 创建颜色标识 - 使用更柔和的Ghibli风格颜色
 		var color_rect = ColorRect.new()
 		color_rect.size_flags_vertical = Control.SIZE_EXPAND_FILL
-		color_rect.custom_minimum_size = Vector2(5, 0)
-		color_rect.color = template.color
+		color_rect.custom_minimum_size = Vector2(8, 0)
+		
+		# 根据生成器类型选择Ghibli风格的颜色
+		match type:
+			GeneratorType.TREE:
+				color_rect.color = Color(0.45, 0.6, 0.35, 0.9)  # 柔和的绿色
+			GeneratorType.FLOWER:
+				color_rect.color = Color(0.85, 0.65, 0.75, 0.9)  # 淡粉色
+			GeneratorType.BIRD:
+				color_rect.color = Color(0.65, 0.75, 0.85, 0.9)  # 淡蓝色
+			_:
+				color_rect.color = template.color
 		
 		# 创建文本容器
 		var text_container = VBoxContainer.new()
 		text_container.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		text_container.add_theme_constant_override("separation", 5)
 		
-		# 创建名称标签
+		# 创建名称标签 - Ghibli风格的温暖文字
 		var name_label = Label.new()
 		name_label.text = template.name
-		name_label.add_theme_font_size_override("font_size", 16)
+		name_label.add_theme_font_size_override("font_size", 18)
+		name_label.add_theme_color_override("font_color", Color(0.3, 0.25, 0.2))  # 温暖的棕色
 		
-		# 创建费用标签
+		# 创建费用标签 - 柔和的Ghibli文字
 		var cost_label = Label.new()
-		cost_label.add_theme_font_size_override("font_size", 12)
-		cost_label.add_theme_color_override("font_color", default_label_color)
+		cost_label.add_theme_font_size_override("font_size", 14)
+		cost_label.add_theme_color_override("font_color", Color(0.45, 0.4, 0.35))  # 淡棕色
 		
 		# 创建产出标签
 		var output_label = Label.new()
-		output_label.add_theme_font_size_override("font_size", 12)
-		output_label.add_theme_color_override("font_color", default_label_color)
+		output_label.add_theme_font_size_override("font_size", 14)
+		output_label.add_theme_color_override("font_color", Color(0.45, 0.4, 0.35))  # 淡棕色
 		
 		# 创建按钮容器
 		var button_container = VBoxContainer.new()
 		button_container.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+		button_container.add_theme_constant_override("separation", 8)
 		
-		# 创建选择按钮
+		# 创建选择按钮 - Ghibli风格
 		var button = Button.new()
 		button.text = "选择"
 		button.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+		button.custom_minimum_size = Vector2(100, 30)
+		
+		# Ghibli风格按钮样式
+		button.add_theme_font_size_override("font_size", 15)
+		button.add_theme_color_override("font_color", Color(0.25, 0.22, 0.2))
+		button.add_theme_color_override("font_color_hover", Color(0.4, 0.3, 0.2))
+		
+		# 添加Ghibli风格的按钮背景
+		button.add_theme_stylebox_override("normal", StyleBoxFlat.new())
+		var btn_normal_style = button.get_theme_stylebox("normal")
+		if btn_normal_style is StyleBoxFlat:
+			btn_normal_style.bg_color = Color(0.94, 0.91, 0.82, 0.95)  # 温暖的米色
+			btn_normal_style.corner_radius_top_left = 12
+			btn_normal_style.corner_radius_top_right = 12
+			btn_normal_style.corner_radius_bottom_left = 12
+			btn_normal_style.corner_radius_bottom_right = 12
+			btn_normal_style.border_width_top = 1
+			btn_normal_style.border_width_right = 1
+			btn_normal_style.border_width_bottom = 1
+			btn_normal_style.border_width_left = 1
+			btn_normal_style.border_color = Color(0.6, 0.5, 0.4, 0.7)
+			btn_normal_style.shadow_color = Color(0.2, 0.18, 0.15, 0.3)
+			btn_normal_style.shadow_size = 2
+			btn_normal_style.shadow_offset = Vector2(1, 1)
+		
+		# 添加悬停样式
+		button.add_theme_stylebox_override("hover", StyleBoxFlat.new())
+		var btn_hover_style = button.get_theme_stylebox("hover")
+		if btn_hover_style is StyleBoxFlat:
+			# 根据生成器类型选择悬停颜色
+			match type:
+				GeneratorType.TREE:
+					btn_hover_style.bg_color = Color(0.8, 0.9, 0.75, 0.95)  # 淡绿色
+				GeneratorType.FLOWER:
+					btn_hover_style.bg_color = Color(0.95, 0.85, 0.9, 0.95)  # 淡粉色
+				GeneratorType.BIRD:
+					btn_hover_style.bg_color = Color(0.85, 0.9, 0.95, 0.95)  # 淡蓝色
+				_:
+					btn_hover_style.bg_color = Color(0.87, 0.87, 0.82, 0.95)
+			
+			btn_hover_style.corner_radius_top_left = 12
+			btn_hover_style.corner_radius_top_right = 12
+			btn_hover_style.corner_radius_bottom_left = 12
+			btn_hover_style.corner_radius_bottom_right = 12
+			btn_hover_style.border_width_top = 1
+			btn_hover_style.border_width_right = 1
+			btn_hover_style.border_width_bottom = 1
+			btn_hover_style.border_width_left = 1
+			btn_hover_style.border_color = Color(0.55, 0.5, 0.4, 0.7)
+			btn_hover_style.shadow_color = Color(0.2, 0.18, 0.15, 0.3)
+			btn_hover_style.shadow_size = 2
+			btn_hover_style.shadow_offset = Vector2(1, 1)
 		
 		# 连接按钮信号
 		var callable = Callable(self, "_on_generator_button_pressed").bind(type)
 		button.pressed.connect(callable)
 		
-		# 创建升级按钮
+		# 创建升级按钮 - Ghibli风格
 		var upgrade_button = Button.new()
 		upgrade_button.text = "升级"
 		upgrade_button.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 		upgrade_button.visible = false  # 初始设置为隐藏，等数量达到2个时才显示
+		upgrade_button.custom_minimum_size = Vector2(100, 30)
+		
+		# Ghibli风格按钮样式
+		upgrade_button.add_theme_font_size_override("font_size", 15)
+		upgrade_button.add_theme_color_override("font_color", Color(0.25, 0.22, 0.2))
+		upgrade_button.add_theme_color_override("font_color_hover", Color(0.4, 0.3, 0.2))
+		
+		# 添加升级按钮样式
+		upgrade_button.add_theme_stylebox_override("normal", StyleBoxFlat.new())
+		var upg_normal_style = upgrade_button.get_theme_stylebox("normal")
+		if upg_normal_style is StyleBoxFlat:
+			upg_normal_style.bg_color = Color(0.9, 0.87, 0.75, 0.95)  # 温暖的金黄色
+			upg_normal_style.corner_radius_top_left = 12
+			upg_normal_style.corner_radius_top_right = 12
+			upg_normal_style.corner_radius_bottom_left = 12
+			upg_normal_style.corner_radius_bottom_right = 12
+			upg_normal_style.border_width_top = 1
+			upg_normal_style.border_width_right = 1
+			upg_normal_style.border_width_bottom = 1
+			upg_normal_style.border_width_left = 1
+			upg_normal_style.border_color = Color(0.7, 0.6, 0.4, 0.7)  # 金色边框
+			upg_normal_style.shadow_color = Color(0.2, 0.18, 0.15, 0.3)
+			upg_normal_style.shadow_size = 2
+			upg_normal_style.shadow_offset = Vector2(1, 1)
+		
+		# 添加悬停样式
+		upgrade_button.add_theme_stylebox_override("hover", StyleBoxFlat.new())
+		var upg_hover_style = upgrade_button.get_theme_stylebox("hover")
+		if upg_hover_style is StyleBoxFlat:
+			upg_hover_style.bg_color = Color(0.95, 0.9, 0.7, 0.95)  # 更亮的金黄色
+			upg_hover_style.corner_radius_top_left = 12
+			upg_hover_style.corner_radius_top_right = 12
+			upg_hover_style.corner_radius_bottom_left = 12
+			upg_hover_style.corner_radius_bottom_right = 12
+			upg_hover_style.border_width_top = 1
+			upg_hover_style.border_width_right = 1
+			upg_hover_style.border_width_bottom = 1
+			upg_hover_style.border_width_left = 1
+			upg_hover_style.border_color = Color(0.75, 0.65, 0.35, 0.7)
+			upg_hover_style.shadow_color = Color(0.2, 0.18, 0.15, 0.3)
+			upg_hover_style.shadow_size = 2
+			upg_hover_style.shadow_offset = Vector2(1, 1)
 		
 		# 连接升级按钮信号
 		var upgrade_callable = Callable(self, "_on_upgrade_button_pressed").bind(type)
@@ -225,8 +435,18 @@ func _create_generator_ui_items(parent_container):
 		item_container.add_child(text_container)
 		item_container.add_child(button_container)
 		
+		# 添加分隔线 - Ghibli风格的淡淡的分隔线
+		var separator = HSeparator.new()
+		separator.add_theme_stylebox_override("separator", StyleBoxLine.new())
+		var sep_style = separator.get_theme_stylebox("separator")
+		if sep_style is StyleBoxLine:
+			sep_style.color = Color(0.8, 0.75, 0.7, 0.5)  # 柔和的分隔线颜色
+			sep_style.thickness = 1
+		
 		# 添加到父容器
 		parent_container.add_child(item_container)
+		if type != generator_types[-1]:  # 如果不是最后一个，添加分隔线
+			parent_container.add_child(separator)
 		
 		# 保存引用
 		generator_ui_elements[type] = {

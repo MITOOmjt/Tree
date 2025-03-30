@@ -34,7 +34,7 @@ func _ready():
 	# 获取GameConfig引用
 	game_config = get_node_or_null("/root/GameConfig")
 	if not game_config:
-		print("错误: 无法找到GameConfig单例")
+		_logger.error("无法找到GameConfig单例")
 		return
 		
 	# 初始化UI元素
@@ -45,8 +45,13 @@ func _ready():
 	if close_button:
 		close_button.pressed.connect(_on_close_button_pressed)
 	
+	# 应用Ghibli风格
+	_apply_ghibli_style()
+	
 	# 隐藏面板，等待调用show_for_generator显示
 	panel.hide()
+	
+	_logger.info("能力升级UI已初始化并应用Ghibli风格")
 
 # 为特定生成物显示升级面板
 func show_for_generator(generator_type):
@@ -86,39 +91,75 @@ func show_for_generator(generator_type):
 
 # 创建单个能力的UI元素
 func _create_ability_ui(parent_container, ability_name, ability_data):
+	# 获取GhibliTheme单例
+	var ghibli_theme = get_node_or_null("/root/GhibliTheme")
+	
 	# 创建容器
 	var ability_container = HBoxContainer.new()
 	ability_container.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	ability_container.add_theme_constant_override("separation", 15)
 	
 	# 添加左侧信息容器
 	var info_container = VBoxContainer.new()
 	info_container.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	info_container.add_theme_constant_override("separation", 5)
 	
 	# 能力名称
 	var name_label = Label.new()
 	name_label.text = _get_ability_display_name(ability_name)
-	name_label.add_theme_font_size_override("font_size", 16)
+	name_label.add_theme_font_size_override("font_size", 18)
+	name_label.add_theme_color_override("font_color", Color(0.4, 0.3, 0.2))  # 深棕色文字
 	
 	# 能力描述
 	var desc_label = Label.new()
 	desc_label.text = game_config.get_ability_description(current_generator_type, ability_name)
-	desc_label.add_theme_font_size_override("font_size", 12)
-	desc_label.add_theme_color_override("font_color", Color(0.8, 0.8, 0.8))
+	desc_label.add_theme_font_size_override("font_size", 14)
+	desc_label.add_theme_color_override("font_color", Color(0.5, 0.4, 0.3))  # 中棕色文字
 	
 	# 当前等级
 	var level_label = Label.new()
 	level_label.text = "当前等级: " + str(ability_data.level) + "/" + str(ability_data.max_level)
-	level_label.add_theme_font_size_override("font_size", 14)
+	level_label.add_theme_font_size_override("font_size", 16)
+	level_label.add_theme_color_override("font_color", Color(0.4, 0.3, 0.2))  # 深棕色文字
 	
 	# 添加到信息容器
 	info_container.add_child(name_label)
 	info_container.add_child(desc_label)
 	info_container.add_child(level_label)
 	
-	# 创建升级按钮
+	# 创建升级按钮 - 类似参考图片中的按钮
 	var upgrade_button = Button.new()
 	upgrade_button.text = "升级"
 	upgrade_button.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	upgrade_button.custom_minimum_size = Vector2(120, 40)
+	
+	# 应用按钮样式 - 参考图片中的淡黄色按钮风格
+	var button_style = StyleBoxFlat.new()
+	button_style.bg_color = Color(0.98, 0.92, 0.75, 0.98)  # 淡黄色背景
+	button_style.corner_radius_top_left = 15
+	button_style.corner_radius_top_right = 15
+	button_style.corner_radius_bottom_left = 15
+	button_style.corner_radius_bottom_right = 15
+	button_style.border_width_top = 1
+	button_style.border_width_right = 1
+	button_style.border_width_bottom = 1
+	button_style.border_width_left = 1
+	button_style.border_color = Color(0.85, 0.75, 0.6, 0.8)  # 米棕色边框
+	
+	upgrade_button.add_theme_stylebox_override("normal", button_style)
+	upgrade_button.add_theme_font_size_override("font_size", 16)
+	upgrade_button.add_theme_color_override("font_color", Color(0.4, 0.3, 0.2))  # 深棕色文字
+	
+	# 悬停样式
+	var hover_style = button_style.duplicate()
+	hover_style.bg_color = hover_style.bg_color.lightened(0.05)
+	upgrade_button.add_theme_stylebox_override("hover", hover_style)
+	
+	# 按下样式
+	var pressed_style = button_style.duplicate()
+	pressed_style.bg_color = pressed_style.bg_color.darkened(0.05)
+	pressed_style.shadow_offset = Vector2(0, 0)
+	upgrade_button.add_theme_stylebox_override("pressed", pressed_style)
 	
 	# 获取升级成本
 	var upgrade_cost = game_config.calculate_ability_upgrade_cost(current_generator_type, ability_name)
@@ -127,6 +168,9 @@ func _create_ability_ui(parent_container, ability_name, ability_data):
 	if upgrade_cost < 0:
 		upgrade_button.text = "已满级"
 		upgrade_button.disabled = true
+		
+		# 禁用样式
+		upgrade_button.add_theme_color_override("font_color_disabled", Color(0.6, 0.5, 0.4))
 	else:
 		upgrade_button.text = "升级 (" + str(upgrade_cost) + " 金币)"
 		
@@ -134,7 +178,9 @@ func _create_ability_ui(parent_container, ability_name, ability_data):
 		var current_coins = Global.get_coins()
 		if current_coins < upgrade_cost:
 			upgrade_button.disabled = true
-			upgrade_button.add_theme_color_override("font_color_disabled", Color(0.9, 0.2, 0.2))
+			
+			# 即使禁用也保持易读性
+			upgrade_button.add_theme_color_override("font_color_disabled", Color(0.7, 0.3, 0.3))
 		
 		# 连接按钮信号
 		var callable = Callable(self, "_on_upgrade_button_pressed").bind(ability_name)
@@ -157,6 +203,13 @@ func _create_ability_ui(parent_container, ability_name, ability_data):
 	# 添加分隔线
 	var separator = HSeparator.new()
 	separator.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	
+	# 应用分隔线样式
+	var sep_style = StyleBoxLine.new()
+	sep_style.color = Color(0.85, 0.75, 0.6, 0.4)  # 柔和的分隔线颜色
+	sep_style.thickness = 1
+	separator.add_theme_stylebox_override("separator", sep_style)
+	
 	parent_container.add_child(separator)
 
 # 升级按钮点击处理
@@ -285,3 +338,79 @@ func _get_ability_display_name(ability_name):
 func update_ui():
 	if current_generator_type != null and $UpgradePanel.visible:
 		_update_all_upgrade_buttons() 
+
+# 应用Ghibli风格到UI元素
+func _apply_ghibli_style():
+	# 获取GhibliTheme单例
+	var ghibli_theme = get_node_or_null("/root/GhibliTheme")
+	if not ghibli_theme:
+		_logger.warning("无法获取GhibliTheme单例")
+		return
+	
+	# 升级面板
+	var panel = $UpgradePanel
+	if panel:
+		# 应用Ghibli风格的面板背景 - 类似参考图片中的风格
+		var panel_style = StyleBoxFlat.new()
+		panel_style.bg_color = Color(0.98, 0.92, 0.75, 0.98)  # 淡黄色背景
+		panel_style.corner_radius_top_left = 15
+		panel_style.corner_radius_top_right = 15
+		panel_style.corner_radius_bottom_left = 15
+		panel_style.corner_radius_bottom_right = 15
+		panel_style.border_width_top = 1
+		panel_style.border_width_right = 1
+		panel_style.border_width_bottom = 1
+		panel_style.border_width_left = 1
+		panel_style.border_color = Color(0.85, 0.75, 0.6, 0.8)  # 米棕色边框
+		panel_style.shadow_color = Color(0.2, 0.18, 0.15, 0.2)
+		panel_style.shadow_size = 3
+		panel_style.shadow_offset = Vector2(2, 2)
+		panel.add_theme_stylebox_override("panel", panel_style)
+		
+		# 标题标签
+		var title_label = panel.get_node("MarginContainer/VBoxContainer/TitleLabel")
+		if title_label:
+			title_label.add_theme_font_size_override("font_size", 28)
+			title_label.add_theme_color_override("font_color", Color(0.4, 0.3, 0.2))  # 深棕色文字
+		
+		# 分隔线
+		var separator = panel.get_node("MarginContainer/VBoxContainer/HSeparator")
+		if separator:
+			separator.add_theme_constant_override("separation", 20)
+			
+			var sep_style = StyleBoxLine.new()
+			sep_style.color = Color(0.85, 0.75, 0.6, 0.4)  # 柔和的分隔线颜色
+			sep_style.thickness = 1
+			separator.add_theme_stylebox_override("separator", sep_style)
+		
+		# 关闭按钮
+		var close_button = panel.get_node("MarginContainer/VBoxContainer/CloseButton")
+		if close_button:
+			# 使用参考图片中的淡黄色按钮风格
+			var button_style = StyleBoxFlat.new()
+			button_style.bg_color = Color(0.98, 0.92, 0.75, 0.98)  # 淡黄色背景
+			button_style.corner_radius_top_left = 15
+			button_style.corner_radius_top_right = 15
+			button_style.corner_radius_bottom_left = 15
+			button_style.corner_radius_bottom_right = 15
+			button_style.border_width_top = 1
+			button_style.border_width_right = 1
+			button_style.border_width_bottom = 1
+			button_style.border_width_left = 1
+			button_style.border_color = Color(0.85, 0.75, 0.6, 0.8)  # 米棕色边框
+			
+			close_button.add_theme_stylebox_override("normal", button_style)
+			close_button.add_theme_font_size_override("font_size", 18)
+			close_button.add_theme_color_override("font_color", Color(0.4, 0.3, 0.2))  # 深棕色文字
+			close_button.custom_minimum_size = Vector2(120, 40)
+			
+			# 悬停样式
+			var hover_style = button_style.duplicate()
+			hover_style.bg_color = hover_style.bg_color.lightened(0.05)
+			close_button.add_theme_stylebox_override("hover", hover_style)
+			
+			# 按下样式
+			var pressed_style = button_style.duplicate()
+			pressed_style.bg_color = pressed_style.bg_color.darkened(0.05)
+			pressed_style.shadow_offset = Vector2(0, 0)
+			close_button.add_theme_stylebox_override("pressed", pressed_style)
