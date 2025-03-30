@@ -2,9 +2,9 @@
 
 [ext_resource type="PackedScene" uid="uid://c3kax45vggcvy" path="res://scene/direct_tree.tscn" id="1_tree"]
 [ext_resource type="PackedScene" uid="uid://chjgujd8q2d5f" path="res://scene/ui.tscn" id="2_ui"]
-[ext_resource type="Script" path="res://scripts/background_manager.gd" id="3_jk8m1"]
+[ext_resource type="Script" uid="uid://dtwbxgx5jse14" path="res://scripts/background_manager.gd" id="3_jk8m1"]
 [ext_resource type="PackedScene" uid="uid://bnieopdnwjpyr" path="res://scene/generator_ui.tscn" id="4_generator"]
-[ext_resource type="Texture2D" uid="uid://bs6moxgy7gpwr" path="res://resource/bg.png" id="5_bg"]
+[ext_resource type="Texture2D" uid="uid://ct67yqb4viy7n" path="res://resource/bg.png" id="5_bg"]
 
 [node name="Main" type="Node2D"]
 script = ExtResource("3_jk8m1")
@@ -21,6 +21,7 @@ texture = ExtResource("5_bg")
 visible = false
 
 [node name="Trees" type="Node2D" parent="."]
+position = Vector2(14, 200)
 
 [node name="DirectTree5" parent="Trees" instance=ExtResource("1_tree")]
 position = Vector2(565, 334)
