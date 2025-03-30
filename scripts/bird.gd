@@ -9,8 +9,9 @@ var coin_reward = 1
 var floating_text_scene = preload("res://scene/floating_text.tscn")
 
 func _ready():
-	# 使鸟可点击
-	set_process_input(true)
+	# 不再需要设置process_input
+	# 设置Area2D点击事件
+	$ClickArea.input_event.connect(_on_click_area_input_event)
 	
 	# 从GameConfig加载配置
 	_load_config()
@@ -42,36 +43,29 @@ func _load_config():
 	else:
 		_logger.warning("GameConfig单例不可用，使用默认鸟点击配置")
 
-func _input(event):
+# 处理Area2D的点击事件
+func _on_click_area_input_event(_viewport, event, _shape_idx):
 	# 只处理鼠标左键点击
 	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
-		# 获取鼠标位置（全局坐标）
-		var mouse_pos = get_global_mouse_position()
+		# 每次点击前重新计算奖励值
+		var game_config = get_node_or_null("/root/GameConfig")
+		if game_config:
+			coin_reward = game_config.calculate_generator_reward(game_config.GeneratorType.BIRD)
 		
-		# 获取形状的全局坐标
-		var shape_global_rect = Rect2($BirdShape.global_position - Vector2(15, 20), Vector2(30, 20))
+		_logger.info("点击了鸟，获得 %s 金币" % [coin_reward])
 		
-		# 检查点击是否在形状内
-		if _is_point_in_bird_shape(mouse_pos):
-			# 每次点击前重新计算奖励值
-			var game_config = get_node_or_null("/root/GameConfig")
-			if game_config:
-				coin_reward = game_config.calculate_generator_reward(game_config.GeneratorType.BIRD)
-			
-			_logger.info("点击了鸟，获得 %s 金币" % [coin_reward])
-			
-			# 增加金币
-			Global.add_coins(coin_reward)
-			
-			# 显示浮动文本效果
-			spawn_floating_text(mouse_pos)
-			
-			# 显示消息
-			if has_node("/root/MessageBus"):
-				MessageBus.get_instance().emit_signal("show_message", "点击鸟获得" + str(coin_reward) + "金币！", 1)
-			
-			# 阻止事件传递
-			get_viewport().set_input_as_handled()
+		# 增加金币
+		Global.add_coins(coin_reward)
+		
+		# 显示浮动文本效果
+		spawn_floating_text(get_global_mouse_position())
+		
+		# 显示消息
+		if has_node("/root/MessageBus"):
+			MessageBus.get_instance().emit_signal("show_message", "点击鸟获得" + str(coin_reward) + "金币！", 1)
+		
+		# 阻止事件传递
+		get_viewport().set_input_as_handled()
 
 # 生成浮动文本动画
 func spawn_floating_text(position):
@@ -82,30 +76,5 @@ func spawn_floating_text(position):
 	# 添加到场景
 	get_tree().get_root().add_child(floating_text)
 
-# 检查点是否在鸟的三角形形状内
-func _is_point_in_bird_shape(global_point):
-	# 转换为局部坐标
-	var local_point = to_local(global_point)
-	
-	# 获取三角形的三个顶点
-	var a = Vector2(-15, 0)
-	var b = Vector2(15, 0)
-	var c = Vector2(0, -20)
-	
-	# 使用三角形点包含算法
-	return _point_in_triangle(local_point, a, b, c)
-
-# 判断点是否在三角形内
-func _point_in_triangle(p, a, b, c):
-	var d1 = _sign(p, a, b)
-	var d2 = _sign(p, b, c)
-	var d3 = _sign(p, c, a)
-	
-	var has_neg = (d1 < 0) or (d2 < 0) or (d3 < 0)
-	var has_pos = (d1 > 0) or (d2 > 0) or (d3 > 0)
-	
-	return !(has_neg and has_pos)
-
-# 计算点p到线段ab的有符号距离（用于三角形点包含算法）
-func _sign(p, a, b):
-	return (p.x - b.x) * (a.y - b.y) - (a.x - b.x) * (p.y - b.y) 
+# 不再需要这些三角形点击检测函数
+# 由Area2D和CollisionShape2D自动处理点击检测 
