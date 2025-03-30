@@ -29,9 +29,19 @@ GenerationZoneManager="*res://scripts/autoload/generation_zone_manager.gd"
 
 window/size/viewport_width=1920
 window/size/viewport_height=1080
+window/size/window_width_override=1280
+window/size/window_height_override=720
 window/stretch/mode="viewport"
-window/stretch/aspect="ignore"
+window/stretch/aspect="keep_height"
 
 [rendering]
 
 renderer/rendering_method="mobile"
+textures/vram_compression/import_etc2_astc=true
+textures/default_filters/use_nearest_mipmap_filter=true
+anti_aliasing/quality/msaa_2d=1
+textures/canvas_textures/default_texture_filter=2
+
+[filesystem]
+
+import/blender/enabled=false

@@ -230,7 +230,7 @@ func _handle_on_tree_placement(click_position, generator_type):
 			if distance < detection_radius:
 				clicked_tree = tree
 				_logger.debug("点击在树上，树木位置:%s，点击位置:%s，检测半径:%s" % [
-                    tree_position, click_position, detection_radius])
+					tree_position, click_position, detection_radius])
 				break
 	
 	# 如果点击在树上，则生成对应物体
@@ -363,10 +363,10 @@ func _handle_ground_placement(click_position, generator_type):
 					container.add_child(scene_instance)
 				else:
 					add_child(scene_instance)
-                
-                # 记录日志
+				
+				# 记录日志
 				_logger.info("生成%s! 花费%d金币，位置:%s" % [
-                    _get_generator_name(generator_type), cost, corrected_position])
+					_get_generator_name(generator_type), cost, corrected_position])
 				
 				# 更新数量
 				generator_counts[generator_type] += 1

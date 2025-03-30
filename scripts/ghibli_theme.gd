@@ -12,9 +12,9 @@ var fonts = {
 
 # 字体路径
 var font_paths = {
-	"regular": "res://resource/fonts/AveriaSerifLibre-Regular.ttf",
-	"bold": "res://resource/fonts/AveriaSerifLibre-Bold.ttf",
-	"serif": "res://resource/fonts/Lora-Regular.ttf"
+	"regular": "res://resource/fonts/NotoSansCJKsc-Regular.ttf",
+	"bold": "res://resource/fonts/NotoSansCJKsc-Bold.ttf",
+	"serif": "res://resource/fonts/NotoSerifCJKsc-Regular.ttf"
 }
 
 # 吉卜力风格颜色 - 更加接近宫崎骏电影的柔和自然色调
@@ -55,43 +55,52 @@ var style_variants = {
 }
 
 func _ready():
-	# 检查字体文件是否存在
+	# 检查并加载字体
 	check_font_files()
-	# 加载字体
 	load_fonts()
 
 # 检查字体文件是否存在
 func check_font_files():
-	var missing_fonts = []
-	for key in font_paths:
-		if not FileAccess.file_exists(font_paths[key]):
-			missing_fonts.append(key)
-	
-	if missing_fonts.size() > 0:
-		push_warning("吉卜力主题: 以下字体文件不存在: %s" % [missing_fonts])
+	for font_name in font_paths:
+		var path = font_paths[font_name]
+		var file = FileAccess.open(path, FileAccess.READ)
+		if file == null:
+			printerr("警告: 无法找到字体文件 ", path, " - 错误代码: ", FileAccess.get_open_error())
+		else:
+			file.close()
 
 # 加载所有字体
 func load_fonts():
-	for key in font_paths.keys():
-		var font_data = load_font(font_paths[key])
-		if font_data:
-			fonts[key] = font_data
-		else:
-			push_warning("吉卜力主题: 无法加载字体 '%s'，将使用默认字体" % key)
+	for font_name in font_paths:
+		var font = load_font(font_paths[font_name])
+		fonts[font_name] = font
+		if font == null:
+			printerr("警告: 无法加载字体 ", font_name, " 从路径 ", font_paths[font_name])
 
 # 加载单个字体文件
 func load_font(path):
-	if not FileAccess.file_exists(path):
-		push_warning("吉卜力主题: 字体文件不存在: %s" % [path])
+	if path.is_empty():
 		return null
+		
+	var font = null
+	if ResourceLoader.exists(path):
+		font = ResourceLoader.load(path)
+		if font:
+			print("成功加载字体: ", path)
+		else:
+			printerr("警告: 字体资源加载失败: ", path)
+	else:
+		printerr("警告: 字体资源不存在: ", path)
 	
-	# 在Godot 4中，直接使用load加载字体资源
-	var font_resource = load(path)
-	if font_resource == null:
-		push_warning("吉卜力主题: 加载字体失败: %s" % [path])
-		return null
-	
-	return font_resource
+	return font
+
+# 获取字体
+func get_font(font_type):
+	if fonts.has(font_type) and fonts[font_type] != null:
+		return fonts[font_type]
+	else:
+		# 返回常规字体作为后备，如果也不存在则返回null
+		return fonts["regular"] if fonts["regular"] != null else null
 
 # 创建一个按钮的普通样式
 func create_button_normal_style(color_variant = "medium"):

@@ -135,17 +135,28 @@ func _ready():
 	# 创建显示按钮（位于屏幕中间位置更容易看到）
 	show_button = Button.new()
 	show_button.text = "森林资源"
-	show_button.size = Vector2(120, 40)  # 减小按钮尺寸，更适合右上角
+	show_button.custom_minimum_size = Vector2(120, 40)  # 使用固定大小
 	show_button.visible = false  # 初始隐藏
-	
+
+	# 使用Control节点作为按钮容器以便固定位置
+	var button_container = Control.new()
+	button_container.name = "ShowButtonContainer"
+	button_container.anchor_right = 1.0  # 占据整个Canvas宽度
+	button_container.anchor_bottom = 1.0  # 占据整个Canvas高度
+	button_container.mouse_filter = Control.MOUSE_FILTER_IGNORE  # 忽略鼠标事件
+
+	# 将按钮添加到容器中并固定在右上角
+	button_container.add_child(show_button)
+	show_button.position = Vector2(get_viewport().size.x - show_button.custom_minimum_size.x - 20, 20)
+
 	# 确保按钮层级在最上方
 	show_button.z_index = 100
-	
+
 	# 添加Ghibli风格的样式
 	var font = show_button.get_theme_font("font")
 	if font:
 		show_button.add_theme_font_size_override("font_size", 18)  # 较小的字体尺寸
-	
+
 	# Ghibli风格的柔和颜色
 	show_button.add_theme_color_override("font_color", Color(0.25, 0.22, 0.2))  # 深棕色文字
 	show_button.add_theme_color_override("font_color_hover", Color(0.4, 0.3, 0.2))  # 悬停时为温暖的棕色
@@ -196,7 +207,7 @@ func _ready():
 		hover_style.shadow_offset = Vector2(2, 2)
 
 	# 将按钮添加到顶层，确保可见
-	add_child(show_button)
+	add_child(button_container)
 	call_deferred("_position_show_button")  # 延迟设置位置
 	show_button.pressed.connect(_on_show_button_pressed)
 	
@@ -758,40 +769,25 @@ func _position_show_button():
 	
 	# 获取视口大小
 	var viewport_size = get_viewport().size
-	var old_position = show_button.position
 	
-	# 设置新位置
-	show_button.position = Vector2(viewport_size.x - show_button.size.x - 20, 20)
-
-	# 确保按钮在视图范围内
-	if show_button.position.y < 0:
-		show_button.position.y = 20
-	if show_button.position.x < viewport_size.x - show_button.size.x:
-		show_button.position.x = viewport_size.x - show_button.size.x - 20
+	# 固定位置到右上角，不随窗口大小变化而相对变化
+	show_button.position = Vector2(viewport_size.x - show_button.custom_minimum_size.x - 20, 20)
 	
-	# 检查最终位置是否在视口内
-	if show_button.position.x < 0 or show_button.position.x > viewport_size.x or \
-	   show_button.position.y < 0 or show_button.position.y > viewport_size.y:
-		# 如果超出范围，强制设置到右上角安全位置
-		show_button.position = Vector2(max(0, viewport_size.x - show_button.size.x - 20), 20)
-		print("按钮位置超出范围，强制设置到安全位置")
-
-	# 确保按钮添加到正确的父节点
+	# 输出调试信息
+	print("按钮定位: ", 
+		"位置=(", show_button.position.x, ",", show_button.position.y, ") ",
+		"按钮大小=(", show_button.custom_minimum_size.x, ",", show_button.custom_minimum_size.y, ") ",
+		"可见=", show_button.visible,
+		"视口大小=(", viewport_size.x, ",", viewport_size.y, ")",
+		"父节点=", show_button.get_parent().name if show_button.get_parent() else "无")
+		
+	# 确保按钮添加到CanvasLayer（自身）作为直接子节点
 	if show_button.get_parent() != self:
-		print("警告：按钮父节点不正确，重新添加")
+		print("按钮父节点不正确，重新添加到CanvasLayer")
 		if show_button.get_parent():
 			show_button.get_parent().remove_child(show_button)
 		add_child(show_button)
 		show_button.visible = was_visible  # 恢复之前的可见状态
-	
-	# 调试输出
-	print("按钮定位: ", 
-		"旧位置=(", old_position.x, ",", old_position.y, ") ",
-		"新位置=(", show_button.position.x, ",", show_button.position.y, ") ",
-		"按钮大小=(", show_button.size.x, ",", show_button.size.y, ") ",
-		"可见=", show_button.visible,
-		"视口大小=(", viewport_size.x, ",", viewport_size.y, ")",
-		"父节点=", show_button.get_parent().name)
 
 # 在_ready函数最后添加检查
 func _check_initial_button_state():

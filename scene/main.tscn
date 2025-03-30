@@ -13,7 +13,7 @@ script = ExtResource("3_jk8m1")
 
 [node name="Background" type="Sprite2D" parent="."]
 z_index = -10
-position = Vector2(960, 540)
+position = Vector2(960, 489)
 scale = Vector2(1.32001, 1.16471)
 texture = ExtResource("5_bg")
 
@@ -23,11 +23,11 @@ texture = ExtResource("5_bg")
 visible = false
 
 [node name="Trees" type="Node2D" parent="."]
-position = Vector2(14, 200)
+position = Vector2(27, 252)
 
 [node name="DirectTree5" parent="Trees" instance=ExtResource("1_tree")]
-position = Vector2(565, 460)
-scale = Vector2(2.66, 2.66)
+position = Vector2(955, 563)
+scale = Vector2(4.2, 4.2)
 
 [node name="Camera2D" type="Camera2D" parent="."]
 position = Vector2(960, 540)

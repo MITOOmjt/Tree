@@ -183,7 +183,7 @@ func _on_mouse_entered():
 	# Ghibli风格的悬停效果
 	if sprite and not is_on_cooldown:
 		var tween = create_tween()
-		tween.tween_property(sprite, "scale", Vector2(0.06, 0.06), 0.2)  # 调整缩放值以适应新的基础缩放0.03
+		tween.tween_property(sprite, "scale", Vector2(0.15, 0.15), 0.2)  # 调整缩放值以适应新的基础缩放0.03
 		
 		# 添加轻微发光效果
 		var glow = ColorRect.new()
@@ -204,7 +204,7 @@ func _on_mouse_exited():
 	# 恢复正常大小
 	if sprite:
 		var tween = create_tween()
-		tween.tween_property(sprite, "scale", Vector2(0.06, 0.06), 0.2)  # 更新为新的基础缩放0.03
+		tween.tween_property(sprite, "scale", Vector2(0.15, 0.15), 0.2)  # 更新为新的基础缩放0.03
 		
 	# 移除悬停光晕
 	if has_node("HoverGlow"):

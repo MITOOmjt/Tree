@@ -115,10 +115,6 @@ func _add_decorative_elements(parent):
 	
 	# 添加云朵
 	_add_clouds(elements_container)
-	
-	# 添加树木
-	_add_trees(elements_container)
-	
 
 # 添加云朵
 func _add_clouds(parent):
@@ -158,34 +154,3 @@ func _add_clouds(parent):
 		tween.set_loops()  # 循环
 		tween.tween_property(cloud, "position:x", cloud.position.x + 50, 10.0)
 		tween.tween_property(cloud, "position:x", cloud.position.x, 10.0)
-
-# 添加树木
-func _add_trees(parent):
-	# 在左右两侧添加树木
-	var viewport_size = get_viewport().size
-	
-	# 左侧树木
-	_create_tree(parent, Vector2(50, viewport_size.y * 0.6), 1.0)
-	_create_tree(parent, Vector2(150, viewport_size.y * 0.7), 0.8)
-	
-	# 右侧树木
-	_create_tree(parent, Vector2(viewport_size.x - 100, viewport_size.y * 0.65), 0.9)
-	_create_tree(parent, Vector2(viewport_size.x - 180, viewport_size.y * 0.75), 0.7)
-
-# 创建单棵树
-func _create_tree(parent, position, scale_factor):
-	# 使用tree.png图片替换原来的树木
-	var tree_sprite = Sprite2D.new()
-	tree_sprite.texture = load("res://resource/tree.png")
-	tree_sprite.position = position
-	tree_sprite.scale = Vector2(scale_factor * 0.2, scale_factor * 0.2)  # 调整大小适合场景
-	
-	# 添加到父节点
-	parent.add_child(tree_sprite)
-	
-	# 添加轻微动画 - 树轻微摇摆
-	var tween = create_tween()
-	tween.set_loops()
-	tween.tween_property(tree_sprite, "rotation_degrees", 1, 3.0)
-	tween.tween_property(tree_sprite, "rotation_degrees", -1, 3.0)
-	tween.tween_property(tree_sprite, "rotation_degrees", 0, 3.0)
