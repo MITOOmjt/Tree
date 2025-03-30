@@ -16,6 +16,10 @@ var coin_generation_interval = 5.0  # 默认值
 # 浮动文本场景
 var floating_text_scene = preload("res://scene/floating_text.tscn")
 
+# 动画相关变量
+var is_growing = false  # 控制是否正在生长
+var original_scale = Vector2.ZERO  # 原始缩放值
+
 # Called when the node enters the scene tree for the first time.
 func _ready():
 	# 获取金币计时器引用
@@ -33,8 +37,14 @@ func _ready():
 	# 设置树的纹理和缩放
 	if tree_sprite:
 		tree_sprite.texture = load("res://resource/tree.png")
-		tree_sprite.scale = Vector2(0.2, 0.2)  # 调整大小适合场景
+		tree_sprite.scale = Vector2(0.4, 0.4)  # 调整大小适合场景
 		_logger.info("已加载树木图片")
+		
+		# 保存原始缩放值，用于动画
+		original_scale = tree_visual.scale
+		
+		# 开始生长动画
+		start_growing_animation()
 
 # 从GameConfig加载配置
 func _load_config():
@@ -145,4 +155,38 @@ func _is_point_in_triangle(p: Vector2, a: Vector2, b: Vector2, c: Vector2) -> bo
 	
 	return s >= 0 and t >= 0 and (s + t) <= 1
 
-# 删除此处的重复函数
+# 开始生长动画
+func start_growing_animation():
+	# 确保有视觉元素
+	if not tree_visual:
+		_logger.warning("无法执行生长动画：找不到树木视觉元素")
+		return
+	
+	# 设置初始状态
+	is_growing = true
+	tree_visual.scale = Vector2(0.1, 0.01)  # 开始时很小，从根部生长
+	tree_visual.position.y = 80  # 移动到地面位置
+	
+	# 创建并配置缩放动画
+	var tween = create_tween()
+	tween.set_trans(Tween.TRANS_ELASTIC)  # 使用弹性过渡（类似果冻效果）
+	tween.set_ease(Tween.EASE_OUT)
+	
+	# 第一阶段：树木纵向生长
+	tween.tween_property(tree_visual, "scale:y", original_scale.y * 1.2, 0.6)
+	tween.parallel().tween_property(tree_visual, "position:y", 0, 0.6)
+	
+	# 第二阶段：树木横向生长
+	tween.tween_property(tree_visual, "scale:x", original_scale.x * 1.1, 0.5)
+	
+	# 第三阶段：树木弹性恢复到正常大小
+	tween.tween_property(tree_visual, "scale", original_scale, 0.3)
+	
+	# 添加额外的弹跳效果
+	tween.tween_property(tree_visual, "scale", original_scale * 1.05, 0.2)
+	tween.tween_property(tree_visual, "scale", original_scale, 0.2)
+	
+	# 动画完成后
+	tween.tween_callback(func(): is_growing = false)
+	
+	_logger.info("树木生长动画已启动")
