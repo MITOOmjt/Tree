@@ -21,7 +21,7 @@ var generator_templates = {
 			"interval": 5.0,            # 产出间隔(秒)
 		},
 		"placement": "ground",          # 放置类型: ground表示放置在地面/背景
-		"placement_offset": 0,          # 放置时的Y轴偏移量
+		"placement_offset": -250,          # 放置时的Y轴偏移量
 		"container_node": "Trees",       # 容器节点名称
 		"abilities": {                  # 能力系统
 			"efficiency": {             # 效率能力 - 增加金币产出

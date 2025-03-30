@@ -10,6 +10,7 @@ script = ExtResource("1_script")
 priority = 1
 
 [node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="TreeShape"]
+position = Vector2(2, -60)
 polygon = PackedVector2Array(-60, 10, 60, 10, 0, -120)
 
 [node name="TreeSprite" type="Sprite2D" parent="."]

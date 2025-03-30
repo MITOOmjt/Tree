@@ -86,7 +86,7 @@ func _apply_ghibli_style():
 	# 标题标签
 	var title_label = $TitleLabel
 	if title_label:
-		title_label.text = "小树生长记"
+		title_label.text = "小森林"
 		title_label.add_theme_font_size_override("font_size", 48)
 		title_label.add_theme_color_override("font_color", ghibli_theme.colors.text_dark)
 		
