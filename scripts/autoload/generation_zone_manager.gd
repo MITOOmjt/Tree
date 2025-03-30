@@ -46,20 +46,42 @@ func _initialize_default_zones():
 	
 	# 如果没有加载到配置，创建默认区域
 	if not loaded:
+		# 获取当前视口大小，以便创建相对定位的区域
+		var viewport_size = get_viewport().get_visible_rect().size
+		
 		# 创建默认草地区域(占据屏幕下半部分，适合生成树木和花朵)
 		var ground_zone = GenerationZone.new(
 			"ground_zone",
-			Vector2(0, 450),  # 区域开始位置
-			Vector2(1152, 200), # 区域大小
+			Vector2(0, viewport_size.y - 200),  # 区域开始位置 - 相对于屏幕底部
+			Vector2(viewport_size.x, 200), # 区域大小 - 使用屏幕宽度
 			[0, 1],  # GeneratorType.TREE, GeneratorType.FLOWER
 			Color(0.2, 0.8, 0.2, 0.3)  # 半透明绿色
 		)
 		add_zone(ground_zone)
 		
 		if _logger:
-			_logger.info("GenerationZoneManager: 创建默认区域")
+			_logger.info("GenerationZoneManager: 创建默认区域，位置: %s, 大小: %s" % [ground_zone.position, ground_zone.size])
 		else:
-			print("GenerationZoneManager: 创建默认区域")
+			print("GenerationZoneManager: 创建默认区域，位置: %s, 大小: %s" % [ground_zone.position, ground_zone.size])
+
+	# 连接视口大小变化信号，以便在屏幕尺寸改变时更新区域
+	get_viewport().size_changed.connect(_on_viewport_size_changed)
+
+# 处理视口大小变化
+func _on_viewport_size_changed():
+	# 如果没有任何保存的区域配置(即使用默认区域)，则动态调整ground_zone
+	if zones.size() == 1 and zones[0].id == "ground_zone":
+		var viewport_size = get_viewport().get_visible_rect().size
+		var ground_zone = zones[0]
+		
+		# 更新位置和大小
+		ground_zone.position = Vector2(0, viewport_size.y - 200)  # 固定位于底部200像素
+		ground_zone.size = Vector2(viewport_size.x, 200)  # 宽度和视口宽度一致
+		
+		if _logger:
+			_logger.info("GenerationZoneManager: 更新ground_zone尺寸，新位置: %s, 新大小: %s" % [ground_zone.position, ground_zone.size])
+		else:
+			print("GenerationZoneManager: 更新ground_zone尺寸，新位置: %s, 新大小: %s" % [ground_zone.position, ground_zone.size])
 
 # 添加区域
 func add_zone(zone):

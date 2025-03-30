@@ -26,6 +26,11 @@ var game_config
 # 升级UI引用
 var ability_upgrade_ui
 
+# 获取GhibliTheme引用，以使用其字体
+var ghibli_theme
+var regular_font = null
+var bold_font = null
+
 func _ready():
 	print("PopupUI脚本(_ready)：开始初始化...")
 	
@@ -79,6 +84,15 @@ func _ready():
 	else:
 		print("错误: 无法加载能力升级界面")
 	
+	# 获取GhibliTheme引用，以使用其字体
+	ghibli_theme = get_node_or_null("/root/GhibliTheme")
+	if ghibli_theme:
+		regular_font = ghibli_theme.get_font("regular")
+		bold_font = ghibli_theme.get_font("bold")
+		print("PopupUI: 成功获取GhibliTheme字体引用")
+	else:
+		print("PopupUI: 无法获取GhibliTheme引用，将使用默认字体")
+	
 	# 动态创建生成物UI项
 	_create_generator_ui_items(generator_list)
 	
@@ -87,6 +101,10 @@ func _ready():
 	close_button.text = "关闭"
 	close_button.size_flags_horizontal = Control.SIZE_SHRINK_END
 	close_button.custom_minimum_size = Vector2(120, 40)
+	
+	# 应用中文字体
+	if regular_font:
+		close_button.add_theme_font_override("font", regular_font)
 	
 	# Ghibli风格的按钮样式
 	close_button.add_theme_font_size_override("font_size", 18)
@@ -132,83 +150,63 @@ func _ready():
 	popup.get_node("MarginContainer/VBoxContainer").add_child(close_button)
 	close_button.pressed.connect(_on_close_button_pressed)
 	
-	# 创建显示按钮（位于屏幕中间位置更容易看到）
+	# 创建森林资源按钮面板 - 仿照金币UI的实现方式
+	var resource_button_control = Control.new()
+	resource_button_control.name = "ResourceButtonControl"
+	resource_button_control.anchor_right = 1.0
+	resource_button_control.anchor_bottom = 1.0
+	add_child(resource_button_control)
+	
+	# 创建森林资源面板
+	var resource_panel = Panel.new()
+	resource_panel.name = "ResourcePanel"
+	resource_panel.set_position(Vector2(get_viewport().size.x - 140, 20))
+	resource_panel.custom_minimum_size = Vector2(120, 40)
+	resource_button_control.add_child(resource_panel)
+	
+	# 创建森林资源按钮
 	show_button = Button.new()
 	show_button.text = "森林资源"
-	show_button.custom_minimum_size = Vector2(120, 40)  # 使用固定大小
-	show_button.visible = false  # 初始隐藏
-
-	# 使用Control节点作为按钮容器以便固定位置
-	var button_container = Control.new()
-	button_container.name = "ShowButtonContainer"
-	button_container.anchor_right = 1.0  # 占据整个Canvas宽度
-	button_container.anchor_bottom = 1.0  # 占据整个Canvas高度
-	button_container.mouse_filter = Control.MOUSE_FILTER_IGNORE  # 忽略鼠标事件
-
-	# 将按钮添加到容器中并固定在右上角
-	button_container.add_child(show_button)
-	show_button.position = Vector2(get_viewport().size.x - show_button.custom_minimum_size.x - 20, 20)
-
-	# 确保按钮层级在最上方
-	show_button.z_index = 100
-
-	# 添加Ghibli风格的样式
-	var font = show_button.get_theme_font("font")
-	if font:
-		show_button.add_theme_font_size_override("font_size", 18)  # 较小的字体尺寸
-
-	# Ghibli风格的柔和颜色
-	show_button.add_theme_color_override("font_color", Color(0.25, 0.22, 0.2))  # 深棕色文字
-	show_button.add_theme_color_override("font_color_hover", Color(0.4, 0.3, 0.2))  # 悬停时为温暖的棕色
+	show_button.flat = true  # 使按钮平滑
+	show_button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	show_button.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	
-	# 创建一个圆角边框的样式盒子
-	show_button.add_theme_stylebox_override("normal", StyleBoxFlat.new())
-	var normal_style = show_button.get_theme_stylebox("normal")
-	if normal_style is StyleBoxFlat:
-		# 使用温暖的米色作为背景
-		normal_style.bg_color = Color(0.95, 0.95, 0.9, 0.9)  # 半透明浅米色背景
-		# 圆润的边角
-		normal_style.corner_radius_top_left = 6
-		normal_style.corner_radius_top_right = 6
-		normal_style.corner_radius_bottom_left = 6
-		normal_style.corner_radius_bottom_right = 6
-		# 柔和的边框
-		normal_style.border_width_top = 2
-		normal_style.border_width_right = 2
-		normal_style.border_width_bottom = 2
-		normal_style.border_width_left = 2
-		normal_style.border_color = Color(0.7, 0.3, 0.3, 0.8)  # 红棕色边框
-		# 柔和的阴影
-		normal_style.shadow_color = Color(0.2, 0.18, 0.15, 0.4)
-		normal_style.shadow_size = 4
-		normal_style.shadow_offset = Vector2(2, 2)
-		normal_style.content_margin_left = 10
-		normal_style.content_margin_right = 10
-		normal_style.content_margin_top = 5
-		normal_style.content_margin_bottom = 5
-		
-	# 创建悬停样式
-	show_button.add_theme_stylebox_override("hover", StyleBoxFlat.new())
-	var hover_style = show_button.get_theme_stylebox("hover")
-	if hover_style is StyleBoxFlat:
-		# 悬停时背景为淡绿色
-		hover_style.bg_color = Color(0.82, 0.9, 0.75, 0.95)  # 淡绿色，Ghibli常用的自然色调
-		hover_style.corner_radius_top_left = 16
-		hover_style.corner_radius_top_right = 16
-		hover_style.corner_radius_bottom_left = 16
-		hover_style.corner_radius_bottom_right = 16
-		hover_style.border_width_top = 2
-		hover_style.border_width_right = 2
-		hover_style.border_width_bottom = 2
-		hover_style.border_width_left = 2
-		hover_style.border_color = Color(0.5, 0.6, 0.4, 0.7)  # 淡绿色边框
-		hover_style.shadow_color = Color(0.2, 0.18, 0.15, 0.4)
-		hover_style.shadow_size = 4
-		hover_style.shadow_offset = Vector2(2, 2)
-
-	# 将按钮添加到顶层，确保可见
-	add_child(button_container)
-	call_deferred("_position_show_button")  # 延迟设置位置
+	# 应用中文字体
+	if regular_font:
+		show_button.add_theme_font_override("font", regular_font)
+	
+	# 设置按钮样式
+	show_button.add_theme_font_size_override("font_size", 18)
+	show_button.add_theme_color_override("font_color", Color(0.25, 0.22, 0.2))
+	show_button.add_theme_color_override("font_color_hover", Color(0.4, 0.3, 0.2))
+	
+	# 将按钮添加到面板中
+	resource_panel.add_child(show_button)
+	show_button.anchor_right = 1.0
+	show_button.anchor_bottom = 1.0
+	
+	# 应用Ghibli风格面板
+	if ghibli_theme:
+		ghibli_theme.apply_panel_theme(resource_panel, "green")
+	else:
+		# 如果没有GhibliTheme，手动应用样式
+		var panel_style = StyleBoxFlat.new()
+		panel_style.bg_color = Color(0.78, 0.9, 0.75, 0.95)  # 淡绿色背景
+		panel_style.corner_radius_top_left = 12
+		panel_style.corner_radius_top_right = 12
+		panel_style.corner_radius_bottom_left = 12
+		panel_style.corner_radius_bottom_right = 12
+		panel_style.border_width_top = 2
+		panel_style.border_width_right = 2
+		panel_style.border_width_bottom = 2
+		panel_style.border_width_left = 2
+		panel_style.border_color = Color(0.5, 0.6, 0.4, 0.7)  # 淡绿色边框
+		panel_style.shadow_color = Color(0.2, 0.18, 0.15, 0.4)
+		panel_style.shadow_size = 4
+		panel_style.shadow_offset = Vector2(2, 2)
+		resource_panel.add_theme_stylebox_override("panel", panel_style)
+	
+	# 连接按钮信号
 	show_button.pressed.connect(_on_show_button_pressed)
 	
 	# 初始UI状态
@@ -223,9 +221,6 @@ func _ready():
 	
 	# 初始更新UI信息
 	update_ui_from_config()
-	
-	# 检查初始按钮状态
-	call_deferred("_check_initial_button_state")
 	
 	# 设置PopupPanel的Ghibli风格
 	# 创建Ghibli风格的面板背景
@@ -252,11 +247,17 @@ func _ready():
 	if title_label:
 		title_label.add_theme_color_override("font_color", Color(0.35, 0.3, 0.25))  # 深棕色文字
 		title_label.add_theme_font_size_override("font_size", 24)
+		# 应用中文字体
+		if bold_font:
+			title_label.add_theme_font_override("font", bold_font)
 		
 	# 设置当前选择标签样式
 	if current_selection_label:
 		current_selection_label.add_theme_color_override("font_color", Color(0.35, 0.3, 0.25))  # 深棕色文字
 		current_selection_label.add_theme_font_size_override("font_size", 18)
+		# 应用中文字体
+		if regular_font:
+			current_selection_label.add_theme_font_override("font", regular_font)
 	
 	# 确保能够接收窗口大小改变事件
 	get_viewport().size_changed.connect(_on_window_size_changed)
@@ -313,15 +314,27 @@ func _create_generator_ui_items(parent_container):
 		name_label.add_theme_font_size_override("font_size", 18)
 		name_label.add_theme_color_override("font_color", Color(0.3, 0.25, 0.2))  # 温暖的棕色
 		
+		# 应用中文字体
+		if bold_font:
+			name_label.add_theme_font_override("font", bold_font)
+		
 		# 创建费用标签 - 柔和的Ghibli文字
 		var cost_label = Label.new()
 		cost_label.add_theme_font_size_override("font_size", 14)
 		cost_label.add_theme_color_override("font_color", Color(0.45, 0.4, 0.35))  # 淡棕色
 		
+		# 应用中文字体
+		if regular_font:
+			cost_label.add_theme_font_override("font", regular_font)
+		
 		# 创建产出标签
 		var output_label = Label.new()
 		output_label.add_theme_font_size_override("font_size", 14)
 		output_label.add_theme_color_override("font_color", Color(0.45, 0.4, 0.35))  # 淡棕色
+		
+		# 应用中文字体
+		if regular_font:
+			output_label.add_theme_font_override("font", regular_font)
 		
 		# 创建按钮容器
 		var button_container = VBoxContainer.new()
@@ -333,6 +346,10 @@ func _create_generator_ui_items(parent_container):
 		button.text = "选择"
 		button.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 		button.custom_minimum_size = Vector2(100, 30)
+		
+		# 应用中文字体
+		if regular_font:
+			button.add_theme_font_override("font", regular_font)
 		
 		# Ghibli风格按钮样式
 		button.add_theme_font_size_override("font_size", 15)
@@ -395,6 +412,10 @@ func _create_generator_ui_items(parent_container):
 		upgrade_button.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 		upgrade_button.visible = false  # 初始设置为隐藏，等数量达到2个时才显示
 		upgrade_button.custom_minimum_size = Vector2(100, 30)
+		
+		# 应用中文字体
+		if regular_font:
+			upgrade_button.add_theme_font_override("font", regular_font)
 		
 		# Ghibli风格按钮样式
 		upgrade_button.add_theme_font_size_override("font_size", 15)
@@ -491,10 +512,10 @@ func _on_popup_hide():
 	
 	# 如果是手动关闭，我们显示显示按钮
 	if manual_close:
-		# 先重新定位按钮，确保在正确位置
-		call_deferred("_position_show_button")
-		# 然后显示按钮
-		show_button.visible = true
+		# 显示森林资源按钮面板
+		var resource_panel = get_node_or_null("ResourceButtonControl/ResourcePanel")
+		if resource_panel:
+			resource_panel.visible = true
 		manual_close = false
 		print("手动关闭：按钮已设置为可见")
 	else:
@@ -504,10 +525,10 @@ func _on_popup_hide():
 			call_deferred("_reshow_popup")
 		else:
 			allow_hide = false
-			# 先重新定位按钮，确保在正确位置
-			call_deferred("_position_show_button")
-			# 然后显示按钮
-			show_button.visible = true
+			# 显示森林资源按钮面板
+			var resource_panel = get_node_or_null("ResourceButtonControl/ResourcePanel")
+			if resource_panel:
+				resource_panel.visible = true
 			print("自动关闭且允许隐藏：按钮已设置为可见")
 
 # 处理右上角X按钮关闭请求
@@ -517,10 +538,10 @@ func _on_popup_close_requested():
 	allow_hide = true  # 允许面板隐藏
 	$PopupPanel.hide()
 	
-	# 先重新定位按钮，确保在正确位置
-	call_deferred("_position_show_button")
-	# 再显示按钮
-	show_button.visible = true
+	# 显示森林资源按钮面板
+	var resource_panel = get_node_or_null("ResourceButtonControl/ResourcePanel")
+	if resource_panel:
+		resource_panel.visible = true
 	
 	print("PopupUI: 用户通过右上角X按钮关闭了界面")
 
@@ -535,17 +556,22 @@ func _on_close_button_pressed():
 	allow_hide = true  # 允许面板隐藏
 	$PopupPanel.hide()
 	
-	# 先重新定位按钮，确保在正确位置
-	call_deferred("_position_show_button")
-	# 再显示按钮
-	show_button.visible = true
+	# 显示森林资源按钮面板
+	var resource_panel = get_node_or_null("ResourceButtonControl/ResourcePanel")
+	if resource_panel:
+		resource_panel.visible = true
 	
 	print("PopupUI: 用户手动关闭了界面")
 
 # 显示按钮点击处理
 func _on_show_button_pressed():
 	print("PopupUI: 显示按钮被点击")
-	show_button.visible = false
+	
+	# 隐藏森林资源按钮面板
+	var resource_panel = get_node_or_null("ResourceButtonControl/ResourcePanel")
+	if resource_panel:
+		resource_panel.visible = false
+	
 	print("按钮已隐藏，准备显示面板")
 	
 	# 更新面板位置，避免面板位置也出现问题
@@ -702,17 +728,28 @@ func _on_coins_changed(new_amount):
 	if $PopupPanel.visible:
 		update_ui_from_config()
 
+# 处理窗口大小变化
+func _on_window_size_changed():
+	print("检测到窗口大小改变")
+	
+	# 调整资源按钮面板位置
+	var resource_panel = get_node_or_null("ResourceButtonControl/ResourcePanel")
+	if resource_panel:
+		resource_panel.set_position(Vector2(get_viewport().size.x - 140, 20))
+	
+	# 调整弹出面板位置
+	if $PopupPanel.visible:
+		var viewport_size = get_viewport().size
+		$PopupPanel.position = Vector2(viewport_size.x - $PopupPanel.size.x - 20, 250)
+
 # 确保按钮位于正确位置
 func _notification(what):
 	if what == NOTIFICATION_WM_SIZE_CHANGED:
-		# 窗口大小改变时，重新定位按钮，无论其是否可见
-		if show_button:
-			call_deferred("_position_show_button")
-			print("窗口大小改变，重新定位按钮")
+		_on_window_size_changed()
 			
 # 每帧更新
 func _process(delta):
-	# 我们使用_position_show_button方法，这里不需要再进行按钮位置更新
+	# 使用_on_window_size_changed处理大小变化，这里不需要特殊处理
 	pass
 
 # 设置当前生成器
@@ -753,60 +790,16 @@ func refresh_ui():
 
 # 添加全局快捷键支持和父节点检查
 func _input(event):
-	# 按G键快速打开生成器界面
+	# 按G键快速打开生成器界面，仅在调试版本中启用
 	if event is InputEventKey and event.pressed and event.keycode == KEY_G:
-		if not $PopupPanel.visible and show_button.visible:
-			print("按下G键，触发显示生成界面")
-			_on_show_button_pressed()
-		elif $PopupPanel.visible:
-			print("按下G键，触发关闭生成界面")
-			_on_close_button_pressed()
-
-# 设置显示按钮位置（延迟调用，确保视口大小已准备好）
-func _position_show_button():
-	# 保存当前可见状态
-	var was_visible = show_button.visible
-	
-	# 获取视口大小
-	var viewport_size = get_viewport().size
-	
-	# 固定位置到右上角，不随窗口大小变化而相对变化
-	show_button.position = Vector2(viewport_size.x - show_button.custom_minimum_size.x - 20, 20)
-	
-	# 输出调试信息
-	print("按钮定位: ", 
-		"位置=(", show_button.position.x, ",", show_button.position.y, ") ",
-		"按钮大小=(", show_button.custom_minimum_size.x, ",", show_button.custom_minimum_size.y, ") ",
-		"可见=", show_button.visible,
-		"视口大小=(", viewport_size.x, ",", viewport_size.y, ")",
-		"父节点=", show_button.get_parent().name if show_button.get_parent() else "无")
-		
-	# 确保按钮添加到CanvasLayer（自身）作为直接子节点
-	if show_button.get_parent() != self:
-		print("按钮父节点不正确，重新添加到CanvasLayer")
-		if show_button.get_parent():
-			show_button.get_parent().remove_child(show_button)
-		add_child(show_button)
-		show_button.visible = was_visible  # 恢复之前的可见状态
-
-# 在_ready函数最后添加检查
-func _check_initial_button_state():
-	print("初始检查按钮状态")
-	
-	# 确保按钮被正确添加到场景树
-	if not show_button.is_inside_tree():
-		print("按钮未在场景树中，重新添加")
-		add_child(show_button)
-	
-	# 设置初始位置
-	call_deferred("_position_show_button")
-
-# 添加窗口大小改变的处理函数
-func _on_window_size_changed():
-	print("检测到窗口大小改变")
-	call_deferred("_position_show_button")
-	
-	# 如果面板可见，同时更新面板位置
-	if $PopupPanel.visible:
-		var viewport_size = get_viewport().size
-		$PopupPanel.position = Vector2(viewport_size.x - $PopupPanel.size.x - 20, 250)
+		# 检查是否为调试版本，只有调试版本才能使用G键快捷键
+		if OS.is_debug_build():
+			if not $PopupPanel.visible:
+				print("按下G键，触发显示生成界面")
+				_on_show_button_pressed()
+			elif $PopupPanel.visible:
+				print("按下G键，触发关闭生成界面")
+				_on_close_button_pressed()
+		# 在非调试版本中可以记录尝试使用快捷键的信息
+		else:
+			print("尝试使用G键操作生成器界面，但在发布版本中已禁用此功能")
