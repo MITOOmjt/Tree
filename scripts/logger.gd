@@ -12,20 +12,20 @@ var _max_log_file_size = 1024 * 1024 # 最大日志文件大小（1MB）
 
 # 日志级别名称
 var _level_names = {
-    LogLevel.DEBUG: "调试",
-    LogLevel.INFO: "信息",
-    LogLevel.WARNING: "警告",
-    LogLevel.ERROR: "错误",
-    LogLevel.CRITICAL: "致命"
+	LogLevel.DEBUG: "调试",
+	LogLevel.INFO: "信息",
+	LogLevel.WARNING: "警告",
+	LogLevel.ERROR: "错误",
+	LogLevel.CRITICAL: "致命"
 }
 
 # 日志级别颜色（控制台输出时使用）
 var _level_colors = {
-    LogLevel.DEBUG: "808080",    # 灰色
-    LogLevel.INFO: "FFFFFF",     # 白色
-    LogLevel.WARNING: "FFFF00",  # 黄色
-    LogLevel.ERROR: "FF0000",    # 红色
-    LogLevel.CRITICAL: "FF00FF"  # 洋红色
+	LogLevel.DEBUG: "808080",    # 灰色
+	LogLevel.INFO: "FFFFFF",     # 白色
+	LogLevel.WARNING: "FFFF00",  # 黄色
+	LogLevel.ERROR: "FF0000",    # 红色
+	LogLevel.CRITICAL: "FF00FF"  # 洋红色
 }
 
 # 初始化

@@ -1,6 +1,6 @@
 [gd_scene load_steps=2 format=3 uid="uid://bdmf5mvq4aqmq"]
 
-[ext_resource type="Script" path="res://scripts/ability_upgrade_ui.gd" id="1_4yjcv"]
+[ext_resource type="Script" uid="uid://tfm2qj0c8l2l" path="res://scripts/ability_upgrade_ui.gd" id="1_4yjcv"]
 
 [node name="AbilityUpgradeUI" type="CanvasLayer"]
 script = ExtResource("1_4yjcv")
@@ -8,7 +8,6 @@ script = ExtResource("1_4yjcv")
 [node name="UpgradePanel" type="PopupPanel" parent="."]
 title = "能力升级"
 size = Vector2i(500, 400)
-visible = false
 borderless = false
 
 [node name="MarginContainer" type="MarginContainer" parent="UpgradePanel"]
@@ -42,4 +41,4 @@ theme_override_constants/separation = 15
 [node name="CloseButton" type="Button" parent="UpgradePanel/MarginContainer/VBoxContainer"]
 layout_mode = 2
 size_flags_horizontal = 4
-text = "关闭" 
+text = "关闭"

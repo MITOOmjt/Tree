@@ -3,31 +3,78 @@ extends Node
 # Ghibli Theme Manager
 # 为游戏提供一致的吉卜力风格主题
 
-# 吉卜力风格颜色 - 参考图片中的柔和风格
+# 字体资源
+var fonts = {
+	"regular": null,
+	"bold": null,
+	"serif": null
+}
+
+# 字体路径
+var font_paths = {
+	"regular": "res://resource/fonts/AveriaSerifLibre-Regular.ttf",
+	"bold": "res://resource/fonts/AveriaSerifLibre-Bold.ttf",
+	"serif": "res://resource/fonts/Lora-Regular.ttf"
+}
+
+# 吉卜力风格颜色 - 更加接近宫崎骏电影的柔和自然色调
 var colors = {
-	# 背景色
-	"background_light": Color(0.98, 0.95, 0.85, 0.98),  # 淡黄色背景
-	"background_medium": Color(0.96, 0.92, 0.8, 0.95),  # 温暖的米色
-	"background_dark": Color(0.94, 0.88, 0.75, 0.95),  # 深米色
+	# 背景色 - 更柔和的色调
+	"background_light": Color(0.98, 0.96, 0.9, 0.95),  # 淡米黄色背景
+	"background_medium": Color(0.96, 0.94, 0.85, 0.92),  # 温暖的奶油色
+	"background_dark": Color(0.94, 0.91, 0.82, 0.9),  # 深奶油色
 	
-	# 强调色
-	"accent_green": Color(0.55, 0.75, 0.45, 0.9),  # 柔和的绿色
-	"accent_pink": Color(0.9, 0.75, 0.8, 0.9),  # 淡粉色
-	"accent_blue": Color(0.65, 0.8, 0.9, 0.9),  # 淡蓝色
-	"accent_yellow": Color(0.98, 0.92, 0.7, 0.95),  # 淡黄色
+	# 强调色 - 更自然的色调
+	"accent_green": Color(0.6, 0.78, 0.5, 0.9),  # 宫崎骏风格的草地绿
+	"accent_blue": Color(0.7, 0.85, 0.95, 0.9),  # 天空蓝
+	"accent_pink": Color(0.95, 0.8, 0.85, 0.85),  # 樱花粉
+	"accent_yellow": Color(0.98, 0.94, 0.75, 0.9),  # 阳光黄
+	"accent_brown": Color(0.75, 0.65, 0.48, 0.9),  # 树木棕
 	
-	# 文字颜色
-	"text_dark": Color(0.4, 0.3, 0.2),  # 深棕色文字
-	"text_medium": Color(0.5, 0.4, 0.3),  # 中棕色文字
-	"text_light": Color(0.6, 0.5, 0.4),  # 淡棕色文字
+	# 文字颜色 - 更温暖的色调
+	"text_dark": Color(0.35, 0.25, 0.18),  # 深棕色文字
+	"text_medium": Color(0.45, 0.35, 0.25),  # 中棕色文字
+	"text_light": Color(0.55, 0.45, 0.35),  # 淡棕色文字
+	"text_white": Color(0.98, 0.96, 0.92),  # 温暖的白色文字
 	
 	# 边框颜色
-	"border_dark": Color(0.7, 0.6, 0.45, 0.7),  # 深棕色边框
-	"border_light": Color(0.85, 0.75, 0.6, 0.8),  # 淡棕色边框
+	"border_dark": Color(0.65, 0.55, 0.4, 0.8),  # 深棕色边框
+	"border_light": Color(0.8, 0.7, 0.55, 0.7),  # 淡棕色边框
 	
 	# 分隔线颜色
-	"separator": Color(0.85, 0.8, 0.7, 0.5)  # 柔和的分隔线颜色
+	"separator": Color(0.8, 0.75, 0.65, 0.5)  # 柔和的分隔线颜色
 }
+
+# 预设的样式变体
+var style_variants = {
+	"tree": "accent_green",
+	"flower": "accent_pink",
+	"bird": "accent_blue",
+	"coin": "accent_yellow",
+	"upgrade": "accent_brown"
+}
+
+func _ready():
+	# 加载字体
+	load_fonts()
+
+# 加载所有字体
+func load_fonts():
+	for key in font_paths.keys():
+		var font_data = load_font(font_paths[key])
+		if font_data:
+			fonts[key] = font_data
+		else:
+			push_error("吉卜力主题: 无法加载字体 '%s'" % key)
+
+# 加载单个字体文件
+func load_font(path):
+	var font = FontFile.new()
+	var err = font.load_dynamic_font(path)
+	if err != OK:
+		push_error("加载字体失败: %s (错误代码: %d)" % [path, err])
+		return null
+	return font
 
 # 创建一个按钮的普通样式
 func create_button_normal_style(color_variant = "medium"):
@@ -39,34 +86,36 @@ func create_button_normal_style(color_variant = "medium"):
 			style.bg_color = colors.background_light
 		"dark":
 			style.bg_color = colors.background_dark
-		"green":
-			style.bg_color = Color(0.8, 0.9, 0.75, 0.95)  # 淡绿色
-		"pink":
-			style.bg_color = Color(0.95, 0.85, 0.9, 0.95)  # 淡粉色
-		"blue":
-			style.bg_color = Color(0.8, 0.85, 0.95, 0.95)  # 淡蓝色
-		"yellow":
-			style.bg_color = Color(0.98, 0.92, 0.75, 0.95)  # 淡黄色
+		"accent_green", "green":
+			style.bg_color = colors.accent_green
+		"accent_pink", "pink":
+			style.bg_color = colors.accent_pink
+		"accent_blue", "blue":
+			style.bg_color = colors.accent_blue
+		"accent_yellow", "yellow":
+			style.bg_color = colors.accent_yellow
+		"accent_brown", "brown":
+			style.bg_color = colors.accent_brown
 		_:  # medium 默认
 			style.bg_color = colors.background_medium
 	
-	# 圆角设置 - 更接近参考图片中的圆角
-	style.corner_radius_top_left = 15
-	style.corner_radius_top_right = 15
-	style.corner_radius_bottom_left = 15
-	style.corner_radius_bottom_right = 15
+	# 圆角设置 - 更大的圆角，更接近吉卜力风格
+	style.corner_radius_top_left = 18
+	style.corner_radius_top_right = 18
+	style.corner_radius_bottom_left = 18
+	style.corner_radius_bottom_right = 18
 	
-	# 边框设置 - 更细的边框
-	style.border_width_top = 1
-	style.border_width_right = 1
-	style.border_width_bottom = 1
-	style.border_width_left = 1
-	style.border_color = colors.border_dark
+	# 边框设置 - 更柔和的边框
+	style.border_width_top = 2
+	style.border_width_right = 2
+	style.border_width_bottom = 2
+	style.border_width_left = 2
+	style.border_color = colors.border_light
 	
 	# 阴影设置 - 更柔和的阴影
-	style.shadow_color = Color(0.2, 0.18, 0.15, 0.2)
-	style.shadow_size = 1
-	style.shadow_offset = Vector2(1, 1)
+	style.shadow_color = Color(0.2, 0.18, 0.15, 0.15)
+	style.shadow_size = 4
+	style.shadow_offset = Vector2(2, 2)
 	
 	return style
 
@@ -74,43 +123,69 @@ func create_button_normal_style(color_variant = "medium"):
 func create_button_hover_style(color_variant = "medium"):
 	var style = create_button_normal_style(color_variant)
 	
-	# 悬停时颜色稍微更亮
-	style.bg_color = style.bg_color.lightened(0.05)
+	# 悬停时颜色变得更亮，更有活力
+	style.bg_color = style.bg_color.lightened(0.08)
+	style.border_color = colors.border_dark
+	
+	# 增加悬停时的阴影效果
+	style.shadow_size = 6
+	style.shadow_offset = Vector2(3, 3)
 	
 	return style
 
-# 创建一个面板样式 - 更接近参考图中的风格
-func create_panel_style():
+# 创建一个面板样式 - 吉卜力风格的圆角和柔和边框
+func create_panel_style(color_variant = "light"):
 	var style = StyleBoxFlat.new()
 	
 	# 背景设置
-	style.bg_color = colors.background_light
+	match color_variant:
+		"dark":
+			style.bg_color = colors.background_dark
+		"medium":
+			style.bg_color = colors.background_medium
+		"accent_green", "green":
+			style.bg_color = colors.accent_green.lightened(0.2)
+		"accent_pink", "pink":
+			style.bg_color = colors.accent_pink.lightened(0.2)
+		"accent_blue", "blue":
+			style.bg_color = colors.accent_blue.lightened(0.2)
+		"accent_yellow", "yellow":
+			style.bg_color = colors.accent_yellow.lightened(0.2)
+		"accent_brown", "brown":
+			style.bg_color = colors.accent_brown.lightened(0.2)
+		_:  # light 默认
+			style.bg_color = colors.background_light
 	
-	# 圆角设置
-	style.corner_radius_top_left = 15
-	style.corner_radius_top_right = 15
-	style.corner_radius_bottom_left = 15
-	style.corner_radius_bottom_right = 15
+	# 圆角设置 - 更大的圆角
+	style.corner_radius_top_left = 20
+	style.corner_radius_top_right = 20
+	style.corner_radius_bottom_left = 20
+	style.corner_radius_bottom_right = 20
 	
-	# 边框设置
-	style.border_width_top = 1
-	style.border_width_right = 1
-	style.border_width_bottom = 1
-	style.border_width_left = 1
+	# 边框设置 - 柔和的边框
+	style.border_width_top = 2
+	style.border_width_right = 2
+	style.border_width_bottom = 2
+	style.border_width_left = 2
 	style.border_color = colors.border_light
 	
-	# 阴影设置
-	style.shadow_color = Color(0.2, 0.18, 0.15, 0.2)
-	style.shadow_size = 3
-	style.shadow_offset = Vector2(2, 2)
+	# 阴影设置 - 更柔和的阴影
+	style.shadow_color = Color(0.2, 0.18, 0.15, 0.15)
+	style.shadow_size = 5
+	style.shadow_offset = Vector2(3, 3)
 	
 	return style
 
 # 应用Ghibli主题到按钮
-func apply_button_theme(button, color_variant = "medium", font_size = 15):
+func apply_button_theme(button, color_variant = "medium", font_size = 16):
+	# 设置字体
+	button.add_theme_font_override("font", fonts.regular)
 	button.add_theme_font_size_override("font_size", font_size)
+	
+	# 设置文本颜色
 	button.add_theme_color_override("font_color", colors.text_dark)
-	button.add_theme_color_override("font_color_hover", colors.text_medium)
+	button.add_theme_color_override("font_color_hover", colors.text_dark.lightened(0.2))
+	button.add_theme_color_override("font_color_pressed", colors.text_dark.darkened(0.1))
 	
 	# 添加按钮样式
 	button.add_theme_stylebox_override("normal", create_button_normal_style(color_variant))
@@ -118,12 +193,28 @@ func apply_button_theme(button, color_variant = "medium", font_size = 15):
 	
 	# 添加按压样式
 	var pressed_style = create_button_normal_style(color_variant)
-	pressed_style.bg_color = pressed_style.bg_color.darkened(0.05)
-	pressed_style.shadow_offset = Vector2(0, 0)
+	pressed_style.bg_color = pressed_style.bg_color.darkened(0.1)
+	pressed_style.shadow_offset = Vector2(1, 1)
+	pressed_style.shadow_size = 2
 	button.add_theme_stylebox_override("pressed", pressed_style)
+	
+	# 禁用状态
+	var disabled_style = create_button_normal_style(color_variant)
+	disabled_style.bg_color = disabled_style.bg_color.darkened(0.2)
+	disabled_style.border_color = colors.border_light.darkened(0.2)
+	button.add_theme_stylebox_override("disabled", disabled_style)
+	button.add_theme_color_override("font_color_disabled", colors.text_light.darkened(0.2))
 
 # 应用Ghibli主题到标签
-func apply_label_theme(label, text_variant = "medium", font_size = 14):
+func apply_label_theme(label, text_variant = "medium", font_size = 16, use_bold = false, use_serif = false):
+	# 设置字体
+	if use_bold:
+		label.add_theme_font_override("font", fonts.bold)
+	elif use_serif:
+		label.add_theme_font_override("font", fonts.serif)
+	else:
+		label.add_theme_font_override("font", fonts.regular)
+	
 	label.add_theme_font_size_override("font_size", font_size)
 	
 	# 根据变体应用文字颜色
@@ -132,12 +223,14 @@ func apply_label_theme(label, text_variant = "medium", font_size = 14):
 			label.add_theme_color_override("font_color", colors.text_dark)
 		"light":
 			label.add_theme_color_override("font_color", colors.text_light)
+		"white":
+			label.add_theme_color_override("font_color", colors.text_white)
 		_:  # medium 默认
 			label.add_theme_color_override("font_color", colors.text_medium)
 
 # 应用Ghibli主题到面板
-func apply_panel_theme(panel):
-	panel.add_theme_stylebox_override("panel", create_panel_style())
+func apply_panel_theme(panel, color_variant = "light"):
+	panel.add_theme_stylebox_override("panel", create_panel_style(color_variant))
 
 # 创建一个分隔线样式
 func create_separator_style():
@@ -146,44 +239,116 @@ func create_separator_style():
 	style.thickness = 1
 	return style
 
-# 创建滑块样式 - 类似参考图片中的风格
-func create_slider_style():
+# 创建滑块样式 - 吉卜力风格
+func create_slider_style(color_variant = "green"):
 	var slider_style = StyleBoxFlat.new()
-	slider_style.bg_color = Color(0.7, 0.8, 0.65, 0.9)  # 柔和的绿色
-	slider_style.corner_radius_top_left = 8
-	slider_style.corner_radius_top_right = 8
-	slider_style.corner_radius_bottom_left = 8
-	slider_style.corner_radius_bottom_right = 8
+	
+	# 根据颜色变体选择背景色
+	match color_variant:
+		"blue":
+			slider_style.bg_color = colors.accent_blue
+		"pink":
+			slider_style.bg_color = colors.accent_pink
+		"yellow":
+			slider_style.bg_color = colors.accent_yellow
+		"brown":
+			slider_style.bg_color = colors.accent_brown
+		_:  # green 默认
+			slider_style.bg_color = colors.accent_green
+	
+	slider_style.corner_radius_top_left = 10
+	slider_style.corner_radius_top_right = 10
+	slider_style.corner_radius_bottom_left = 10
+	slider_style.corner_radius_bottom_right = 10
+	
 	return slider_style
 
 # 应用Ghibli主题到滑块
-func apply_slider_theme(slider):
-	slider.add_theme_stylebox_override("slider", create_slider_style())
+func apply_slider_theme(slider, color_variant = "green"):
+	slider.add_theme_stylebox_override("slider", create_slider_style(color_variant))
+	slider.add_theme_stylebox_override("grabber_area", create_slider_style(color_variant))
+	
+	# 设置滑块抓取区域样式
+	var grabber_style = StyleBoxFlat.new()
+	grabber_style.bg_color = Color(1, 1, 1, 0.9)
+	grabber_style.corner_radius_top_left = 8
+	grabber_style.corner_radius_top_right = 8
+	grabber_style.corner_radius_bottom_left = 8
+	grabber_style.corner_radius_bottom_right = 8
+	grabber_style.shadow_size = 2
+	grabber_style.shadow_color = Color(0, 0, 0, 0.2)
+	
+	slider.add_theme_stylebox_override("grabber_area_highlight", grabber_style)
 
-# 应用标题样式到标签
-func apply_title_style(label, text_variant = "dark", font_size = 32):
-	label.add_theme_font_size_override("font_size", font_size)
+# 应用标题样式 - 大标题文本
+func apply_title_style(label, color_variant = "dark", font_size = 28):
+	apply_label_theme(label, color_variant, font_size, true, false)
 	
-	# 根据变体应用文字颜色
-	match text_variant:
-		"dark":
-			label.add_theme_color_override("font_color", colors.text_dark)
-		"light":
-			label.add_theme_color_override("font_color", colors.text_light)
-		_:  # medium 默认
-			label.add_theme_color_override("font_color", colors.text_medium)
+	# 添加描边效果
+	label.add_theme_color_override("font_outline_color", colors.background_light)
+	label.add_theme_constant_override("outline_size", 1)
 	
-	# 为标题添加阴影效果
-	label.add_theme_constant_override("shadow_offset_x", 1)
-	label.add_theme_constant_override("shadow_offset_y", 1)
-	label.add_theme_color_override("font_shadow_color", Color(0.2, 0.18, 0.15, 0.3))
+	# 添加阴影效果
+	label.add_theme_constant_override("shadow_offset_x", 2)
+	label.add_theme_constant_override("shadow_offset_y", 2)
+	label.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 0.2))
 
-# 应用副标题样式到标签
-func apply_subtitle_style(label, text_variant = "medium", font_size = 18):
-	# 基础应用与普通标签相同
-	apply_label_theme(label, text_variant, font_size)
+# 应用子标题样式
+func apply_subtitle_style(label, color_variant = "medium", font_size = 20):
+	apply_label_theme(label, color_variant, font_size, false, true)
+
+# 创建带有吉卜力风格的图标按钮 (使用颜色代替图标)
+func create_icon_button(parent, icon_color, size = Vector2(32, 32), tooltip = ""):
+	var btn = Button.new()
+	var icon = ColorRect.new()
 	
-	# 为副标题添加轻微的阴影
-	label.add_theme_constant_override("shadow_offset_x", 1)
-	label.add_theme_constant_override("shadow_offset_y", 1)
-	label.add_theme_color_override("font_shadow_color", Color(0.2, 0.18, 0.15, 0.2)) 
+	# 设置按钮属性
+	btn.size = size
+	btn.tooltip_text = tooltip
+	btn.focus_mode = Control.FOCUS_NONE
+	
+	# 设置图标属性
+	icon.color = icon_color
+	icon.size = Vector2(size.x * 0.6, size.y * 0.6)
+	icon.position = Vector2((size.x - icon.size.x) / 2, (size.y - icon.size.y) / 2)
+	
+	# 应用主题
+	apply_button_theme(btn, "light", 14)
+	
+	# 添加图标到按钮
+	btn.add_child(icon)
+	
+	# 添加按钮到父节点
+	parent.add_child(btn)
+	
+	return btn
+
+# 应用Ghibli主题到全局主题
+func apply_to_theme(theme):
+	# 设置默认字体和颜色
+	theme.set_font("font", "Label", fonts.regular)
+	theme.set_font("font", "Button", fonts.regular)
+	theme.set_font("font", "LineEdit", fonts.regular)
+	
+	# 设置默认颜色
+	theme.set_color("font_color", "Label", colors.text_dark)
+	theme.set_color("font_color", "Button", colors.text_dark)
+	
+	# 设置默认样式
+	theme.set_stylebox("normal", "Button", create_button_normal_style())
+	theme.set_stylebox("hover", "Button", create_button_hover_style())
+	theme.set_stylebox("panel", "Panel", create_panel_style())
+
+# 根据生成器类型获取合适的颜色变体
+func get_color_variant_for_generator(generator_type):
+	var game_config = get_node_or_null("/root/GameConfig")
+	if game_config:
+		match generator_type:
+			game_config.GeneratorType.TREE:
+				return "accent_green"
+			game_config.GeneratorType.FLOWER:
+				return "accent_pink"
+			game_config.GeneratorType.BIRD:
+				return "accent_blue"
+	
+	return "medium" 
