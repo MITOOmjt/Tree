@@ -23,6 +23,7 @@ GameManager="*res://scripts/game_manager.gd"
 GameConfig="*res://scripts/game_config.gd"
 Logger="*res://scripts/logger.gd"
 GhibliTheme="*res://scripts/ghibli_theme.gd"
+GenerationZoneManager="*res://scripts/autoload/generation_zone_manager.gd"
 
 [display]
 

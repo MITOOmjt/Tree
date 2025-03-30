@@ -296,8 +296,12 @@ func _show_click_effect():
 	particles.gravity = Vector2(0, 98)
 	particles.initial_velocity_min = 50
 	particles.initial_velocity_max = 80
-	particles.scale_amount = 0.3
-	particles.scale_amount_random = 0.2
+	
+	# 设置粒子缩放
+	particles.scale_amount_min = 0.2
+	particles.scale_amount_max = 0.4
+	# scale_amount_random属性在Godot 4中已不存在，使用min/max代替
+	#particles.scale_amount_random = 0.2
 	
 	add_child(particles)
 	

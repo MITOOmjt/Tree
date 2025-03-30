@@ -54,11 +54,11 @@ func _ready():
 		_logger.info("背景图已加载")
 		# 如果需要，可以在这里添加其他背景图设置
 		
-		# 可以添加微小的动画效果，使背景看起来更生动
-		var tween = create_tween()
-		tween.set_loops()  # 循环
-		tween.tween_property(background, "scale", Vector2(0.605, 0.605), 10.0)
-		tween.tween_property(background, "scale", Vector2(0.6, 0.6), 10.0)
+		# 自动缩放已移除，保持用户设置的背景大小和位置
+		# var tween = create_tween()
+		# tween.set_loops()  # 循环
+		# tween.tween_property(background, "scale", Vector2(0.605, 0.605), 10.0)
+		# tween.tween_property(background, "scale", Vector2(0.6, 0.6), 10.0)
 	else:
 		_logger.warning("无法找到背景图节点")
 	
@@ -276,6 +276,13 @@ func _handle_on_tree_placement(click_position, generator_type):
 
 # 处理放在地面/背景的生成物
 func _handle_ground_placement(click_position, generator_type):
+	# 检查是否在允许的生成区域内
+	var zone_manager = get_node_or_null("/root/GenerationZoneManager")
+	if zone_manager and not zone_manager.is_in_allowed_zone(click_position, generator_type):
+		_logger.warning("点击位置不在允许的%s生成区域内" % [_get_generator_name(generator_type)])
+		MessageBus.get_instance().emit_signal("show_message", "请在允许区域内生成" + _get_generator_name(generator_type), 2)
+		return
+
 	# 检查是否点击在树上，如果在树上则不生成新物体
 	var is_on_tree = false
 	

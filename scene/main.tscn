@@ -1,18 +1,20 @@
-[gd_scene load_steps=6 format=3 uid="uid://c5j8tmo2cdwud"]
+[gd_scene load_steps=8 format=3 uid="uid://c5j8tmo2cdwud"]
 
 [ext_resource type="PackedScene" uid="uid://c3kax45vggcvy" path="res://scene/direct_tree.tscn" id="1_tree"]
 [ext_resource type="PackedScene" uid="uid://chjgujd8q2d5f" path="res://scene/ui.tscn" id="2_ui"]
 [ext_resource type="Script" uid="uid://dtwbxgx5jse14" path="res://scripts/background_manager.gd" id="3_jk8m1"]
 [ext_resource type="PackedScene" uid="uid://bnieopdnwjpyr" path="res://scene/generator_ui.tscn" id="4_generator"]
 [ext_resource type="Texture2D" uid="uid://ct67yqb4viy7n" path="res://resource/bg.png" id="5_bg"]
+[ext_resource type="Script" path="res://scripts/generation_zone_visualizer.gd" id="6_jpnl5"]
+[ext_resource type="PackedScene" path="res://scene/zone_editor_ui.tscn" id="7_8h0tc"]
 
 [node name="Main" type="Node2D"]
 script = ExtResource("3_jk8m1")
 
 [node name="Background" type="Sprite2D" parent="."]
 z_index = -10
-position = Vector2(576, 324)
-scale = Vector2(0.6, 0.6)
+position = Vector2(576, 305)
+scale = Vector2(0.760005, 0.67059)
 texture = ExtResource("5_bg")
 
 [node name="UI" parent="." instance=ExtResource("2_ui")]
@@ -29,3 +31,9 @@ scale = Vector2(1.1, 1.1)
 
 [node name="Camera2D" type="Camera2D" parent="."]
 position = Vector2(576, 324)
+
+[node name="ZoneVisualizer" type="Node2D" parent="."]
+z_index = -5
+script = ExtResource("6_jpnl5")
+
+[node name="ZoneEditorUI" parent="." instance=ExtResource("7_8h0tc")]

@@ -15,7 +15,6 @@ scale = Vector2(0.0400006, 0.0400006)
 texture = ExtResource("2_vhbr1")
 
 [node name="ClickArea" type="Area2D" parent="."]
-input_pickable = true
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="ClickArea"]
 position = Vector2(0, -16)

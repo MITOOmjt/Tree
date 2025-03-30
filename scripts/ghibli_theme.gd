@@ -158,4 +158,32 @@ func create_slider_style():
 
 # 应用Ghibli主题到滑块
 func apply_slider_theme(slider):
-	slider.add_theme_stylebox_override("slider", create_slider_style()) 
+	slider.add_theme_stylebox_override("slider", create_slider_style())
+
+# 应用标题样式到标签
+func apply_title_style(label, text_variant = "dark", font_size = 32):
+	label.add_theme_font_size_override("font_size", font_size)
+	
+	# 根据变体应用文字颜色
+	match text_variant:
+		"dark":
+			label.add_theme_color_override("font_color", colors.text_dark)
+		"light":
+			label.add_theme_color_override("font_color", colors.text_light)
+		_:  # medium 默认
+			label.add_theme_color_override("font_color", colors.text_medium)
+	
+	# 为标题添加阴影效果
+	label.add_theme_constant_override("shadow_offset_x", 1)
+	label.add_theme_constant_override("shadow_offset_y", 1)
+	label.add_theme_color_override("font_shadow_color", Color(0.2, 0.18, 0.15, 0.3))
+
+# 应用副标题样式到标签
+func apply_subtitle_style(label, text_variant = "medium", font_size = 18):
+	# 基础应用与普通标签相同
+	apply_label_theme(label, text_variant, font_size)
+	
+	# 为副标题添加轻微的阴影
+	label.add_theme_constant_override("shadow_offset_x", 1)
+	label.add_theme_constant_override("shadow_offset_y", 1)
+	label.add_theme_color_override("font_shadow_color", Color(0.2, 0.18, 0.15, 0.2)) 
