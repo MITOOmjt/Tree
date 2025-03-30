@@ -1,6 +1,6 @@
-[gd_scene load_steps=2 format=3 uid="uid://dyyuaou85dxar"]
+[gd_scene load_steps=2 format=3 uid="uid://b1tpksvesmqpu"]
 
-[ext_resource type="Script" path="res://scripts/zone_editor_ui.gd" id="1_qeblh"]
+[ext_resource type="Script" uid="uid://dkckr06kp84h2" path="res://scripts/zone_editor_ui.gd" id="1_qeblh"]
 
 [node name="ZoneEditorUI" type="CanvasLayer"]
 layer = 100
@@ -149,4 +149,4 @@ text = "删除区域"
 
 [node name="CloseButton" type="Button" parent="Panel/VBoxContainer"]
 layout_mode = 2
-text = "关闭" 
+text = "关闭"
