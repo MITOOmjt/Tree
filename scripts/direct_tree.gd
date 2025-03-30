@@ -164,29 +164,17 @@ func start_growing_animation():
 	
 	# 设置初始状态
 	is_growing = true
-	tree_visual.scale = Vector2(0.1, 0.01)  # 开始时很小，从根部生长
-	tree_visual.position.y = 80  # 移动到地面位置
+	tree_visual.scale = Vector2(0.01, 0.01)  # 开始时很小
 	
-	# 创建并配置缩放动画
+	# 创建简单的缩放动画
 	var tween = create_tween()
-	tween.set_trans(Tween.TRANS_ELASTIC)  # 使用弹性过渡（类似果冻效果）
+	tween.set_trans(Tween.TRANS_SINE)  # 使用简单的正弦过渡
 	tween.set_ease(Tween.EASE_OUT)
 	
-	# 第一阶段：树木纵向生长
-	tween.tween_property(tree_visual, "scale:y", original_scale.y * 1.2, 0.6)
-	tween.parallel().tween_property(tree_visual, "position:y", 0, 0.6)
-	
-	# 第二阶段：树木横向生长
-	tween.tween_property(tree_visual, "scale:x", original_scale.x * 1.1, 0.5)
-	
-	# 第三阶段：树木弹性恢复到正常大小
-	tween.tween_property(tree_visual, "scale", original_scale, 0.3)
-	
-	# 添加额外的弹跳效果
-	tween.tween_property(tree_visual, "scale", original_scale * 1.05, 0.2)
-	tween.tween_property(tree_visual, "scale", original_scale, 0.2)
+	# 简单地缩放到原始大小
+	tween.tween_property(tree_visual, "scale", original_scale, 0.5)
 	
 	# 动画完成后
 	tween.tween_callback(func(): is_growing = false)
 	
-	_logger.info("树木生长动画已启动")
+	_logger.info("树木简单缩放动画已启动")
