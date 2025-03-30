@@ -167,6 +167,35 @@ AI助手在帮助用户编写或修改代码时，应主动检查：
    - 任何位置调整操作应通过修改GameConfig中的配置而非修改渲染代码
    - 提示信息例子：「要调整所有花朵的Y轴位置，应修改GameConfig中的placement_offset参数，而非在生成代码中添加硬编码偏移」
 
+17. **结构化日志系统使用规范**：
+   - 所有脚本必须在顶部添加 `@onready var _logger = get_node("/root/Logger")` 以获取Logger单例
+   - 不要使用print函数输出调试信息，应该使用结构化日志系统
+   - 按照日志级别使用不同方法：_logger.debug(), _logger.info(), _logger.warning(), _logger.error()
+   - 日志输出应包含必要的上下文信息，便于调试
+   - 提示信息例子：「使用_logger.debug("从GameConfig加载金币产出量: %s", coin_amount)代替print语句」
+
+18. **Ghibli风格主题应用规范**：
+   - 所有UI元素应使用GhibliTheme单例提供的方法应用一致的视觉风格
+   - 对于按钮：使用GhibliTheme.apply_button_theme(button, variant, font_size)
+   - 对于标签：使用GhibliTheme.apply_label_theme(label, variant, font_size)
+   - 对于面板：使用GhibliTheme.apply_panel_theme(panel)
+   - 提示信息例子：「新UI元素应使用GhibliTheme.apply_button_theme(upgrade_button, "green", 15)应用主题样式」
+
+19. **图像资源使用规范**：
+   - 游戏中的视觉元素应优先使用resource目录下的图像资源而非硬编码的形状
+   - 鸟类元素应使用resource/bird.png
+   - 树木元素应使用resource/tree.png
+   - 背景元素应使用resource/bg.png
+   - 使用Sprite2D节点代替Polygon2D节点，并配合适当的碰撞形状
+   - 提示信息例子：「使用Sprite2D显示resource/tree.png替代Polygon2D绘制的树形状」
+   - 提示信息例子：「确保碰撞区域大小与视觉图像相匹配，避免点击检测问题」
+
+20. **点击区域处理规范**：
+   - 对于可点击的游戏元素，应使用Area2D和CollisionShape2D组件处理点击交互
+   - 不要使用自定义的点击检测算法，除非有特殊需求
+   - 点击事件应使用Area2D的input_event信号处理而非_input函数
+   - 提示信息例子：「将点击检测从自定义三角形算法改为使用标准的Area2D和CollisionShape2D」
+
 ## 项目技术规范
 
 ### GDScript

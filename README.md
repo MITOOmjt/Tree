@@ -4,7 +4,7 @@
 
 ## 功能
 
-- 使用简单的多边形图形表示树、花朵和鸟
+- 使用吉卜力(Ghibli)风格的图像资源表示树、花朵和鸟
 - 动态资源管理系统，使用金币作为游戏内货币
 - 点击树的任何位置可以生成一只鸟（消耗10金币）
 - 点击空白区域可根据选择生成树木（消耗3金币）或花朵（消耗1金币）
@@ -12,8 +12,20 @@
 - 实时显示当前选择的生成物类型和金币余额
 - 通过弹出式生成器面板选择生成对象类型
 - 可折叠的UI界面，支持手动关闭和重新打开
-- 美观的按钮样式和状态反馈
+- 美观的Ghibli风格按钮样式和状态反馈
 - 中央配置系统，方便调整游戏平衡性
+- 高度可定制的生成物位置偏移系统
+- 结构化日志系统，方便调试和问题追踪
+
+## 视觉风格
+
+游戏采用了吉卜力(Ghibli)风格的视觉设计，特点包括：
+
+- 柔和的色彩调色板，如淡黄、淡绿、柔和的蓝色和粉色
+- 圆角的UI元素和柔和的阴影效果
+- 手绘风格的游戏元素（树木、鸟类、花朵）
+- 温暖、自然的背景图像
+- 轻松愉悦的界面体验
 
 ## 如何使用
 
@@ -30,22 +42,34 @@
 
 ```
 tree/
+├── resource/                 # 资源文件目录
+│   ├── tree.png              # 树木图像资源
+│   ├── bird.png              # 鸟类图像资源
+│   ├── bg.png                # 背景图像资源
+│   └── flower.png            # 花朵图像资源
 ├── treegame/                  # 游戏主要内容目录
 │   ├── scene/                 # 场景文件目录
 │   │   ├── main.tscn          # 主场景
 │   │   ├── direct_tree.tscn   # 树木场景
 │   │   ├── flower.tscn        # 花朵场景
 │   │   ├── bird.tscn          # 鸟类场景
+│   │   ├── floating_text.tscn # 浮动文本场景
 │   │   ├── ui.tscn            # 主UI场景
+│   │   ├── ability_upgrade_ui.tscn # 能力升级UI场景
 │   │   └── generator_popup_ui.tscn # 生成器弹出式UI场景
 │   ├── scripts/               # 脚本文件目录
 │   │   ├── background_manager.gd # 背景及对象管理器
 │   │   ├── generator_popup_ui.gd # 生成器弹出式UI控制器
+│   │   ├── ability_upgrade_ui.gd # 能力升级UI控制器
 │   │   ├── ui.gd              # 界面控制脚本
 │   │   ├── direct_tree.gd     # 树木行为脚本
+│   │   ├── flower.gd          # 花朵行为脚本
 │   │   ├── bird.gd            # 鸟的逻辑脚本
 │   │   ├── global.gd          # 全局单例（金币系统）
-│   │   └── game_config.gd     # 游戏配置单例
+│   │   ├── game_config.gd     # 游戏配置单例
+│   │   ├── logger.gd          # 日志系统单例
+│   │   ├── ghibli_theme.gd    # Ghibli主题管理单例
+│   │   └── floating_text.gd   # 浮动文本控制脚本
 │   ├── .godot/                # Godot引擎配置文件
 │   ├── project.godot          # 项目配置文件
 │   └── icon.svg               # 项目图标
@@ -60,7 +84,18 @@ tree/
 - 避免使用相对路径或绝对路径引用资源
 - 场景文件必须放在`scene/`目录中
 - 脚本文件必须放在`scripts/`目录中
+- 图像资源文件必须放在`resource/`目录中
 - 脚本文件名应与其关联的场景文件名保持一致（例如：direct_tree.tscn 对应 direct_tree.gd）
+
+## 单例系统
+
+游戏包含以下单例系统，可全局访问：
+
+- **Global**：管理全局状态和金币系统
+- **GameConfig**：游戏配置中心，管理所有生成物模板和数值平衡
+- **Logger**：结构化日志系统，提供不同级别的日志记录功能
+- **GhibliTheme**：Ghibli风格主题管理器，提供一致的视觉样式
+- **MessageBus**：消息总线，管理全局事件和通知
 
 ## UI系统说明
 
@@ -70,6 +105,20 @@ tree/
 - 关闭后在屏幕底部显示"打开生成界面"按钮
 - 防止点击穿透和背景自动关闭问题
 - 提供清晰的视觉状态反馈（已选择/选择状态）
+- 应用Ghibli风格的按钮和标签样式
+
+### Ghibli风格UI
+- 使用GhibliTheme单例统一管理UI样式
+- 所有按钮使用圆角、柔和阴影和温暖色调
+- 提供不同颜色变体：light、medium、dark、green、pink、blue、yellow
+- 支持悬停和点击状态的视觉反馈
+- 标签使用柔和的字体颜色和适当的字体大小
+
+### 能力升级界面
+- 直观显示当前生成物的可升级能力
+- 显示当前等级、升级效果和升级成本
+- 应用Ghibli风格的视觉设计
+- 升级按钮状态会根据当前金币数量自动更新
 
 ### 金币与资源系统
 - 树木生成成本：3金币
@@ -277,7 +326,37 @@ func _load_config():
    - 负值：将生成物向上移动
    - 此参数可以在游戏运行时通过`game_config.set_placement_offset(type, value)`动态调整
 
+5. **图形资源**: 使用resource目录下的图像资源
+   - 树木: resource/tree.png
+   - 鸟类: resource/bird.png
+   - 花朵: resource/flower.png
+   - 背景: resource/bg.png
+
 添加完成后，UI系统会自动创建新生成物的选择按钮和信息显示，无需修改UI代码。背景管理器也会根据放置类型自动处理新生成物的创建和放置逻辑。
+
+## 日志系统
+
+游戏使用结构化的日志系统（Logger单例）来记录运行时信息，便于调试和问题追踪。
+
+### 日志级别
+
+- **DEBUG**: 详细的调试信息，如配置加载过程、计算过程等
+- **INFO**: 常规信息，如对象初始化、游戏事件等
+- **WARNING**: 警告信息，不会导致游戏崩溃但需要注意的问题
+- **ERROR**: 错误信息，可能导致功能异常的问题
+
+### 使用方式
+
+```gdscript
+# 在脚本顶部获取Logger单例
+@onready var _logger = get_node("/root/Logger")
+
+# 使用不同级别的日志函数
+_logger.debug("配置加载完成，金币产出量: %s", coin_amount)
+_logger.info("玩家生成了一棵树")
+_logger.warning("找不到GameConfig单例，使用默认配置")
+_logger.error("生成物创建失败: %s", error_message)
+```
 
 ## 后续开发计划
 
