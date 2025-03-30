@@ -2,6 +2,7 @@ extends Node2D
 
 # 确保Logger单例在编译时可见
 @onready var _logger = get_node("/root/Logger")
+@onready var background = $Background
 
 # 调试路径
 const POPUP_UI_PATH = "res://scene/generator_popup_ui.tscn"
@@ -47,6 +48,19 @@ func _ready():
 	
 	# 确保能接收输入
 	set_process_input(true)
+	
+	# 设置背景图
+	if background:
+		_logger.info("背景图已加载")
+		# 如果需要，可以在这里添加其他背景图设置
+		
+		# 可以添加微小的动画效果，使背景看起来更生动
+		var tween = create_tween()
+		tween.set_loops()  # 循环
+		tween.tween_property(background, "scale", Vector2(0.605, 0.605), 10.0)
+		tween.tween_property(background, "scale", Vector2(0.6, 0.6), 10.0)
+	else:
+		_logger.warning("无法找到背景图节点")
 	
 	# 获取当前金币数量
 	coins = Global.get_coins()
