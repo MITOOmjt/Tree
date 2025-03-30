@@ -21,6 +21,7 @@ var generator_templates = {
 			"interval": 5.0,            # 产出间隔(秒)
 		},
 		"placement": "ground",          # 放置类型: ground表示放置在地面/背景
+		"placement_offset": 0,          # 放置时的Y轴偏移量
 		"container_node": "Trees",       # 容器节点名称
 		"abilities": {                  # 能力系统
 			"efficiency": {             # 效率能力 - 增加金币产出
@@ -53,6 +54,7 @@ var generator_templates = {
 			"cooldown": 1.5,            # 产出冷却时间(秒)
 		},
 		"placement": "ground",          # 放置类型: ground表示放置在地面/背景
+		"placement_offset": 0,          # 放置时的Y轴偏移量
 		"container_node": "Flowers",     # 容器节点名称
 		"abilities": {                  # 能力系统
 			"efficiency": {             # 效率能力 - 增加金币产出
@@ -84,6 +86,7 @@ var generator_templates = {
 			"amount": 1,                # 产出金币数量
 		},
 		"placement": "on_tree",         # 放置类型: on_tree表示放置在树上
+		"placement_offset": 0,          # 放置时的Y轴偏移量
 		"container_node": "",            # 容器节点名称(为空表示直接添加到父节点)
 		"abilities": {                  # 能力系统
 			"efficiency": {             # 效率能力 - 增加金币产出
@@ -294,6 +297,21 @@ func get_ability_description(type, ability_name):
 				return "提高" + ability_name + "，每级" + str(effect_percent) + "%"
 	
 	return "未知能力" 
+
+# 获取生成物放置偏移
+func get_placement_offset(type):
+	var template = get_generator_template(type)
+	if template and template.has("placement_offset"):
+		return template.placement_offset
+	return 0
+
+# 设置生成物放置偏移
+func set_placement_offset(type, offset):
+	var template = get_generator_template(type)
+	if template:
+		template.placement_offset = offset
+		return true
+	return false
 
 # 计算生成器当前奖励值（适用于任何生成器类型）
 func calculate_generator_reward(generator_type):

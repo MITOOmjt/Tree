@@ -311,6 +311,13 @@ func _handle_ground_placement(click_position, generator_type):
 				var camera = get_node_or_null("Camera2D")
 				var corrected_position = click_position
 				
+				# 从GameConfig获取当前生成器类型的偏移量
+				var game_config = get_node_or_null("/root/GameConfig")
+				var placement_y_offset = 0
+				if game_config:
+					placement_y_offset = game_config.get_placement_offset(generator_type)
+					_logger.debug("从GameConfig获取%s的Y轴偏移量: %s" % [_get_generator_name(generator_type), placement_y_offset])
+				
 				if camera:
 					# 我们只修正y轴偏移
 					_logger.debug("原始点击位置: %s, 相机位置: %s" % [click_position, camera.position])
@@ -320,14 +327,17 @@ func _handle_ground_placement(click_position, generator_type):
 					
 					# 如果相机位置与默认位置不同，计算偏移
 					# 相机向下移动(y增加)，点击位置需要向上调整(y减少)，反之亦然
-					var y_offset = viewport_center.y - camera.position.y
+					var camera_y_offset = viewport_center.y - camera.position.y
 					
-					# 应用y轴修正
-					corrected_position = Vector2(click_position.x, click_position.y + y_offset)
+					# 应用相机y轴修正和GameConfig中的偏移参数
+					corrected_position = Vector2(click_position.x, click_position.y + camera_y_offset + placement_y_offset)
 					
-					_logger.debug("修正后点击位置: %s, 应用的y轴偏移: %s" % [corrected_position, y_offset])
+					_logger.debug("修正后点击位置: %s, 相机y轴偏移: %s, 配置Y轴偏移: %s" % [
+						corrected_position, camera_y_offset, placement_y_offset])
 				else:
-					_logger.warning("找不到相机节点，无法修正位置")
+					# 即使没有相机，也应用配置的y轴偏移
+					corrected_position = Vector2(click_position.x, click_position.y + placement_y_offset)
+					_logger.warning("找不到相机节点，只应用配置Y轴偏移: %s" % [placement_y_offset])
 				
 				# 使用修正后的位置而不是原始点击位置
 				scene_instance.position = corrected_position
