@@ -2,6 +2,8 @@ extends Node2D
 
 # 确保Logger单例在编译时可见
 @onready var _logger = get_node("/root/Logger")
+@onready var tree_visual = $TreeVisual
+@onready var tree_sprite = $TreeVisual/TreeSprite
 
 # 生成金币的数量
 var coin_generation_amount = 1
@@ -28,82 +30,79 @@ func _ready():
 	# 添加到trees组，以便背景管理器可以找到所有树木
 	add_to_group("trees")
 	
-	_logger.info("树已准备就绪，产生金币: %s，间隔: %s 秒" % [coin_generation_amount, coin_timer.wait_time])
+	# 设置树的纹理和缩放
+	if tree_sprite:
+		tree_sprite.texture = load("res://resource/tree.png")
+		tree_sprite.scale = Vector2(0.2, 0.2)  # 调整大小适合场景
+		_logger.info("已加载树木图片")
 
 # 从GameConfig加载配置
 func _load_config():
 	var game_config = get_node_or_null("/root/GameConfig")
-	if game_config:
-		_logger.debug("树执行_load_config()...")
+	if not game_config:
+		_logger.warning("无法获取GameConfig单例")
+		return
+	
+	_logger.debug("树执行_load_config()...")
+	
+	# 使用通用方法计算奖励值
+	var old_amount = coin_generation_amount
+	coin_generation_amount = game_config.calculate_generator_reward(game_config.GeneratorType.TREE)
+	
+	# 获取生成器模板
+	var template = game_config.get_generator_template(game_config.GeneratorType.TREE)
+	var efficiency_multiplier = game_config.get_ability_effect_multiplier(
+		game_config.GeneratorType.TREE, "efficiency")
+	
+	_logger.debug("从GameConfig加载树产生金币数量: %s (原来: %s)" % [
+		coin_generation_amount,
+		old_amount
+	])
+	
+	# 处理生成间隔
+	if template and template.generation.has("interval") and coin_timer:
+		var base_interval = template.generation.interval
+		var speed_multiplier = game_config.get_ability_effect_multiplier(
+			game_config.GeneratorType.TREE, "speed")
 		
-		# 使用通用方法计算奖励值
-		var old_amount = coin_generation_amount
-		coin_generation_amount = game_config.calculate_generator_reward(game_config.GeneratorType.TREE)
+		var old_interval = coin_timer.wait_time
+		# 计算新间隔时间并四舍五入到1位小数
+		var new_interval = base_interval / speed_multiplier
+		var rounded_interval = snapped(new_interval, 0.1)  # 四舍五入到0.1
+		coin_timer.wait_time = rounded_interval
 		
-		# 获取调试信息
-		var template = game_config.get_generator_template(game_config.GeneratorType.TREE)
-		var base_amount = template.generation.amount if template and template.generation.has("amount") else 0
-		var efficiency_multiplier = game_config.get_ability_effect_multiplier(
-			game_config.GeneratorType.TREE, "efficiency")
-		
-		_logger.debug("从GameConfig加载树产生金币数量: %s (基础: %s, 效率乘数: %s, 旧值: %s)" % [
-			coin_generation_amount,
-			base_amount,
-			efficiency_multiplier,
-			old_amount
+		_logger.debug("从GameConfig加载树产生金币间隔: %s (基础: %s, 速度乘数: %s, 旧值: %s)" % [
+			coin_timer.wait_time,
+			base_interval,
+			speed_multiplier,
+			old_interval
 		])
 		
-		# 处理生成间隔
-		if template and template.generation.has("interval") and coin_timer:
-			var base_interval = template.generation.interval
-			var speed_multiplier = game_config.get_ability_effect_multiplier(
-				game_config.GeneratorType.TREE, "speed")
-			
-			var old_interval = coin_timer.wait_time
-			# 计算新间隔时间并四舍五入到1位小数
-			var new_interval = base_interval / speed_multiplier
-			var rounded_interval = snapped(new_interval, 0.1)  # 四舍五入到0.1
-			coin_timer.wait_time = rounded_interval
-			
-			_logger.debug("从GameConfig加载树产生金币间隔: %s (基础: %s, 速度乘数: %s, 旧值: %s)" % [
-				coin_timer.wait_time,
-				base_interval,
-				speed_multiplier,
-				old_interval
-			])
-	else:
-		_logger.warning("GameConfig单例不可用，使用默认树配置")
+		# 启动计时器
+		coin_timer.start()
+	
+	_logger.info("树配置已加载: 间隔=%s秒, 金币数量=%s" % [coin_timer.wait_time, coin_generation_amount])
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(delta):
 	pass
 
-# 当金币计时器超时时产生金币
+# 生成金币的方法
 func _on_coin_timer_timeout():
-	# 每次产生金币前重新计算奖励值
-	var game_config = get_node_or_null("/root/GameConfig")
-	if game_config:
-		coin_generation_amount = game_config.calculate_generator_reward(game_config.GeneratorType.TREE)
+	# 生成金币
+	Global.add_coins(coin_generation_amount)
 	
-	# 在此处添加金币产生的逻辑
-	if Global:
-		Global.add_coins(coin_generation_amount)
-		_logger.info("树产生 %s 金币，当前总金币: %s" % [coin_generation_amount, Global.get_coins()])
-		
-		# 显示浮动文本
-		_show_floating_text("+" + str(coin_generation_amount))
-	else:
-		_logger.error("Global单例不可用")
+	# 显示浮动文本
+	_show_floating_text("+" + str(coin_generation_amount))
+	
+	_logger.debug("树生成了 %s 个金币" % [coin_generation_amount])
 
 # 显示浮动文本
 func _show_floating_text(text):
-	if floating_text_scene:
-		var floating_text = floating_text_scene.instantiate()
-		floating_text.position = Vector2(0, -50)  # 在树的上方显示
-		floating_text.text = text
-		add_child(floating_text)
-	else:
-		print("错误: 浮动文本场景未加载")
+	var floating_text = floating_text_scene.instantiate()
+	floating_text.position = Vector2(0, -50)  # 在树上方显示
+	floating_text.text = text
+	add_child(floating_text)
 
 # 当鼠标进入树的区域时
 func _on_mouse_entered():

@@ -1,6 +1,7 @@
-[gd_scene load_steps=2 format=3 uid="uid://dfejua808ixwv"]
+[gd_scene load_steps=3 format=3 uid="uid://dfejua808ixwv"]
 
 [ext_resource type="Script" uid="uid://cjbhty7e3rna7" path="res://scripts/tree.gd" id="1_script"]
+[ext_resource type="Texture2D" uid="uid://dh1i70ohly5jq" path="res://resource/tree.png" id="2_tree"]
 
 [node name="Tree" type="Node2D"]
 script = ExtResource("1_script")
@@ -11,13 +12,10 @@ priority = 1
 [node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="TreeShape"]
 polygon = PackedVector2Array(-60, 10, 60, 10, 0, -120)
 
-[node name="VisualShape" type="Polygon2D" parent="TreeShape"]
-color = Color(0.262745, 0.521569, 0.196078, 1)
-polygon = PackedVector2Array(-50, 0, 50, 0, 0, -100)
-
-[node name="Trunk" type="Polygon2D" parent="."]
-color = Color(0.545098, 0.270588, 0.0745098, 1)
-polygon = PackedVector2Array(-10, 0, 10, 0, 10, 50, -10, 50)
+[node name="TreeSprite" type="Sprite2D" parent="."]
+position = Vector2(0, -40)
+scale = Vector2(0.2, 0.2)
+texture = ExtResource("2_tree")
 
 [node name="CoinTimer" type="Timer" parent="."]
 wait_time = 5.0

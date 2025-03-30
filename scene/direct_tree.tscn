@@ -1,25 +1,25 @@
-[gd_scene load_steps=2 format=3 uid="uid://c3kax45vggcvy"]
+[gd_scene load_steps=3 format=3 uid="uid://c3kax45vggcvy"]
 
 [ext_resource type="Script" uid="uid://cvhanky0f18yu" path="res://scripts/direct_tree.gd" id="1_script"]
+[ext_resource type="Texture2D" uid="uid://dh1i70ohly5jq" path="res://resource/tree.png" id="2_tree"]
 
 [node name="DirectTree" type="Node2D"]
 script = ExtResource("1_script")
 
 [node name="TreeVisual" type="Node2D" parent="."]
 
-[node name="TreeShape" type="Polygon2D" parent="TreeVisual"]
-color = Color(0.262745, 0.521569, 0.196078, 1)
-polygon = PackedVector2Array(-50, 0, 50, 0, 0, -100)
-
-[node name="Trunk" type="Polygon2D" parent="TreeVisual"]
-color = Color(0.545098, 0.270588, 0.0745098, 1)
-polygon = PackedVector2Array(-10, 0, 10, 0, 10, 50, -10, 50)
+[node name="TreeSprite" type="Sprite2D" parent="TreeVisual"]
+position = Vector2(-2, -0.25)
+scale = Vector2(0.130859, 0.12207)
+texture = ExtResource("2_tree")
 
 [node name="ClickArea" type="Area2D" parent="."]
 monitorable = false
 
 [node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="ClickArea"]
-polygon = PackedVector2Array(-60, 0, 60, 0, 0, -100, -60, 0)
+position = Vector2(0, 1.5)
+scale = Vector2(1, 0.95)
+polygon = PackedVector2Array(-60, 0, 62, -6.84211, 58, -67.8947, 8, -102.632, -34, -91.0526, -66, -62.6316, -60, 0)
 
 [node name="CoinTimer" type="Timer" parent="."]
 wait_time = 5.0
