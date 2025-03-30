@@ -160,7 +160,13 @@ func _ready():
 	# 创建森林资源面板
 	var resource_panel = Panel.new()
 	resource_panel.name = "ResourcePanel"
-	resource_panel.set_position(Vector2(get_viewport().size.x - 140, 20))
+	# 使用控件的锚点和边距属性，而不是set_position
+	resource_panel.anchor_left = 1.0
+	resource_panel.anchor_right = 1.0
+	resource_panel.offset_left = -140
+	resource_panel.offset_right = -20
+	resource_panel.offset_top = 20
+	resource_panel.offset_bottom = 60
 	resource_panel.custom_minimum_size = Vector2(120, 40)
 	resource_button_control.add_child(resource_panel)
 	
@@ -732,10 +738,7 @@ func _on_coins_changed(new_amount):
 func _on_window_size_changed():
 	print("检测到窗口大小改变")
 	
-	# 调整资源按钮面板位置
-	var resource_panel = get_node_or_null("ResourceButtonControl/ResourcePanel")
-	if resource_panel:
-		resource_panel.set_position(Vector2(get_viewport().size.x - 140, 20))
+	# 资源按钮面板使用锚点系统，不需要手动更新位置
 	
 	# 调整弹出面板位置
 	if $PopupPanel.visible:
